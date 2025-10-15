@@ -354,7 +354,7 @@ function HiringPortal() {
   const handleFormSubmit = async () => {
     // Validation
     if (!formData.resume) {
-      alert('Please upload your resume');
+      alert('Please upload your resume (PDF format)');
       return;
     }
     if (!formData.name || !formData.email || !formData.phone || !formData.dob || 
@@ -362,11 +362,21 @@ function HiringPortal() {
         !formData.currentSalary || !formData.availableToJoin || !formData.homeState || 
         !formData.homeDistrict || !formData.currentState || !formData.motivation || 
         !formData.payCut) {
-      alert('Please fill all required fields');
+      alert('Please fill all required fields marked with *');
       return;
     }
+    
+    // Validate education
+    const hasValidEducation = formData.education.some(edu => 
+      edu.qualification && edu.college && edu.year
+    );
+    if (!hasValidEducation) {
+      alert('Please fill at least one complete education entry');
+      return;
+    }
+    
     if (!formData.privacyConsent) {
-      alert('Please accept the privacy policy');
+      alert('Please accept the privacy policy to continue');
       return;
     }
 
@@ -376,6 +386,13 @@ function HiringPortal() {
       let resumeURL = '';
       let photoURL = '';
       let additionalDocsURLs = [];
+
+      // Check if Firebase is configured
+      if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+        alert('Firebase is not configured yet. Please update the Firebase configuration in the code.');
+        setSubmitting(false);
+        return;
+      }
 
       // Upload resume
       if (formData.resume) {
@@ -427,7 +444,7 @@ function HiringPortal() {
         submittedAt: new Date().toISOString()
       });
 
-      alert('Application submitted successfully! We will contact you soon.');
+      alert('✅ Application submitted successfully! We will contact you soon.');
       
       // Reset form
       setFormData({
@@ -471,7 +488,19 @@ function HiringPortal() {
 
     } catch (error) {
       console.error('Error submitting application:', error);
-      alert('Failed to submit application. Please try again.');
+      let errorMessage = 'Failed to submit application. ';
+      
+      if (error.code === 'storage/unauthorized') {
+        errorMessage += 'Storage permission error. Please check Firebase Storage rules.';
+      } else if (error.code === 'permission-denied') {
+        errorMessage += 'Permission denied. Please check Firestore rules.';
+      } else if (error.message) {
+        errorMessage += error.message;
+      } else {
+        errorMessage += 'Please check your internet connection and try again.';
+      }
+      
+      alert(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -620,7 +649,7 @@ function HiringPortal() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 flex items-center justify-center">
         <div className="text-xl text-gray-600">Loading...</div>
       </div>
     );
@@ -932,7 +961,7 @@ function HiringPortal() {
                         <select
                           value={edu.qualification}
                           onChange={(e) => updateEducation(index, 'qualification', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                         >
                           <option value="">Select</option>
                           <option value="B.E">B.E</option>
@@ -958,7 +987,7 @@ function HiringPortal() {
                             type="text"
                             value={edu.otherQualification}
                             onChange={(e) => updateEducation(index, 'otherQualification', e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                             placeholder="Enter qualification"
                           />
                         </div>
@@ -1015,7 +1044,7 @@ function HiringPortal() {
                 ))}
                 <button
                   onClick={addEducation}
-                  className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors font-medium"
                 >
                   <Plus className="w-5 h-5" />
                   Add More Education
@@ -1084,7 +1113,7 @@ function HiringPortal() {
                           type="checkbox"
                           checked={exp.currentlyWorking}
                           onChange={(e) => updateWorkExperience(index, 'currentlyWorking', e.target.checked)}
-                          className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                          className="w-4 h-4 text-orange-600 rounded focus:ring-2 focus:ring-orange-500"
                         />
                         <label className="ml-2 text-sm text-gray-700">Currently I work here</label>
                       </div>
@@ -1105,7 +1134,7 @@ function HiringPortal() {
                 ))}
                 <button
                   onClick={addWorkExperience}
-                  className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors font-medium"
                 >
                   <Plus className="w-5 h-5" />
                   Add Experience Details
@@ -1186,7 +1215,7 @@ function HiringPortal() {
                     name="privacyConsent"
                     checked={formData.privacyConsent}
                     onChange={handleFormChange}
-                    className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 mt-1"
+                    className="w-5 h-5 text-orange-600 rounded focus:ring-2 focus:ring-orange-500 mt-1"
                   />
                   <label className="ml-3 text-sm text-gray-700">
                     <span className="text-red-500">*</span> By applying, you hereby accept the data processing terms under the Privacy Policy and give consent to processing of the data as part of this job application.
@@ -1198,7 +1227,7 @@ function HiringPortal() {
               <button
                 onClick={handleFormSubmit}
                 disabled={submitting}
-                className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-yellow-500 to-red-500 text-white py-4 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-all font-semibold text-lg disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed shadow-lg"
               >
                 {submitting ? 'Submitting Application...' : 'Submit Application'}
               </button>
@@ -1296,7 +1325,7 @@ function HiringPortal() {
                 <textarea
                   value={emailTemplates.rejected}
                   onChange={(e) => setEmailTemplates({...emailTemplates, rejected: e.target.value})}
-                  className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                   disabled={userRole !== 'super_admin'}
                 />
                 <p className="text-xs text-gray-500 mt-2">Use {'{name}'} and {'{position}'} as placeholders</p>
@@ -1318,7 +1347,7 @@ function HiringPortal() {
               {userRole === 'super_admin' && (
                 <button
                   onClick={saveEmailTemplates}
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="w-full bg-gradient-to-r from-yellow-500 to-red-500 text-white py-3 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-all font-medium shadow-md"
                 >
                   Save Templates
                 </button>
@@ -1406,7 +1435,7 @@ function HiringPortal() {
               </div>
               <button
                 onClick={handleAddAdmin}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="w-full bg-gradient-to-r from-yellow-500 to-red-500 text-white py-3 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-all font-medium shadow-md"
               >
                 <UserPlus className="w-5 h-5 inline mr-2" />
                 Add Admin
@@ -1423,8 +1452,8 @@ function HiringPortal() {
                     <h3 className="font-semibold text-gray-800">{admin.name}</h3>
                     <p className="text-sm text-gray-600">{admin.email}</p>
                     <span className={`inline-block mt-1 px-3 py-1 text-xs rounded-full ${
-                      admin.role === 'super_admin' ? 'bg-purple-100 text-purple-800' :
-                      admin.role === 'admin' ? 'bg-blue-100 text-blue-800' :
+                      admin.role === 'super_admin' ? 'bg-red-100 text-red-800' :
+                      admin.role === 'admin' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {admin.role === 'super_admin' ? 'Super Admin' : 
@@ -1501,7 +1530,7 @@ function HiringPortal() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
           <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
             <div className="flex items-center gap-3">
-              <Users className="w-8 h-8 text-blue-600" />
+              <Users className="w-8 h-8 text-orange-600" />
               <div>
                 <p className="text-xs text-gray-600">Total</p>
                 <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
@@ -1620,7 +1649,7 @@ function HiringPortal() {
                     value={candidate.contacted || 'No'}
                     onChange={(e) => updateCandidate(candidate.id, 'contacted', e.target.value, candidate)}
                     disabled={userRole === 'viewer'}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
                   >
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
