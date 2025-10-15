@@ -661,17 +661,17 @@ function HiringPortal() {
     const years = Array.from({ length: currentYear - 1999 }, (_, i) => currentYear - i);
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50">
         <div className="bg-white shadow-md">
           <div className="max-w-6xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-blue-600">Avanti Fellows</h1>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent">Avanti Fellows</h1>
                 <p className="text-sm text-gray-600">Join Our Team - Career Portal</p>
               </div>
               <button
                 onClick={() => setCurrentView('admin-login')}
-                className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-lg hover:from-yellow-600 hover:to-red-600 transition-colors"
               >
                 <Shield className="w-4 h-4" />
                 Admin Login
@@ -695,7 +695,7 @@ function HiringPortal() {
                 </label>
                 <p className="text-sm text-gray-600 mb-4">Upload your resume (PDF only, max 5MB). We'll try to auto-fill some details.</p>
                 <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
+                  <label className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-lg cursor-pointer hover:from-yellow-600 hover:to-red-600 transition-colors">
                     <Upload className="w-5 h-5" />
                     <span>Choose PDF Resume</span>
                     <input
@@ -724,7 +724,7 @@ function HiringPortal() {
                       name="name"
                       value={formData.name}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                       placeholder="John Doe"
                     />
                   </div>
@@ -738,7 +738,7 @@ function HiringPortal() {
                       name="email"
                       value={formData.email}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -752,7 +752,7 @@ function HiringPortal() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                       placeholder="+91 98765 43210"
                     />
                   </div>
@@ -766,7 +766,7 @@ function HiringPortal() {
                       name="dob"
                       value={formData.dob}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
 
@@ -778,7 +778,7 @@ function HiringPortal() {
                       name="gender"
                       value={formData.gender}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     >
                       <option value="">Select Gender</option>
                       <option value="Male">Male</option>
@@ -822,7 +822,7 @@ function HiringPortal() {
                       name="profile"
                       value={formData.profile}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     >
                       <option value="">Select Position</option>
                       <option value="Teacher">Teacher</option>
@@ -840,7 +840,7 @@ function HiringPortal() {
                       name="experience"
                       value={formData.experience}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     >
                       <option value="">Select Experience</option>
                       {Array.from({ length: 31 }, (_, i) => i).map(year => (
@@ -858,7 +858,7 @@ function HiringPortal() {
                       name="currentSalary"
                       value={formData.currentSalary}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                       placeholder="500000"
                     />
                   </div>
@@ -871,7 +871,7 @@ function HiringPortal() {
                       name="availableToJoin"
                       value={formData.availableToJoin}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     >
                       <option value="">Select Days</option>
                       {Array.from({ length: 60 }, (_, i) => i + 1).map(day => (
@@ -894,7 +894,7 @@ function HiringPortal() {
                       name="homeState"
                       value={formData.homeState}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     >
                       <option value="">Select State</option>
                       {INDIAN_STATES.map(state => (
@@ -912,7 +912,7 @@ function HiringPortal() {
                       value={formData.homeDistrict}
                       onChange={handleFormChange}
                       disabled={!formData.homeState}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
                     >
                       <option value="">Select District</option>
                       {formData.homeState && DISTRICTS[formData.homeState]?.map(district => (
@@ -929,7 +929,7 @@ function HiringPortal() {
                       name="currentState"
                       value={formData.currentState}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     >
                       <option value="">Select State</option>
                       {INDIAN_STATES.map(state => (
@@ -1000,7 +1000,7 @@ function HiringPortal() {
                         <select
                           value={edu.college}
                           onChange={(e) => updateEducation(index, 'college', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                         >
                           <option value="">Select College</option>
                           {INDIAN_COLLEGES.map(college => (
@@ -1018,7 +1018,7 @@ function HiringPortal() {
                             type="text"
                             value={edu.otherCollege}
                             onChange={(e) => updateEducation(index, 'otherCollege', e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                             placeholder="Enter college name"
                           />
                         </div>
@@ -1031,7 +1031,7 @@ function HiringPortal() {
                         <select
                           value={edu.year}
                           onChange={(e) => updateEducation(index, 'year', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                         >
                           <option value="">Select Year</option>
                           {years.map(year => (
@@ -1071,7 +1071,7 @@ function HiringPortal() {
                           type="text"
                           value={exp.organization}
                           onChange={(e) => updateWorkExperience(index, 'organization', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                           placeholder="Company Name"
                         />
                       </div>
@@ -1082,7 +1082,7 @@ function HiringPortal() {
                           type="text"
                           value={exp.jobTitle}
                           onChange={(e) => updateWorkExperience(index, 'jobTitle', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                           placeholder="Senior Developer"
                         />
                       </div>
@@ -1093,7 +1093,7 @@ function HiringPortal() {
                           type="date"
                           value={exp.joiningDate}
                           onChange={(e) => updateWorkExperience(index, 'joiningDate', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                         />
                       </div>
 
@@ -1103,7 +1103,7 @@ function HiringPortal() {
                           type="text"
                           value={exp.location}
                           onChange={(e) => updateWorkExperience(index, 'location', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                           placeholder="City, State"
                         />
                       </div>
@@ -1125,7 +1125,7 @@ function HiringPortal() {
                             type="date"
                             value={exp.relievingDate}
                             onChange={(e) => updateWorkExperience(index, 'relievingDate', e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                           />
                         </div>
                       )}
@@ -1185,7 +1185,7 @@ function HiringPortal() {
                       name="motivation"
                       value={formData.motivation}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                       rows="5"
                       placeholder="Share your motivation..."
                     />
@@ -1199,7 +1199,7 @@ function HiringPortal() {
                       name="payCut"
                       value={formData.payCut}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                       rows="5"
                       placeholder="Share your thoughts..."
                     />
@@ -1241,10 +1241,10 @@ function HiringPortal() {
   // ADMIN LOGIN PAGE
   if (currentView === 'admin-login' && !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
           <div className="text-center mb-8">
-            <Shield className="w-16 h-16 text-blue-600 mx-auto mb-4" />
+            <Shield className="w-16 h-16 bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent mx-auto mb-4" />
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Admin Login</h1>
             <p className="text-gray-600">Avanti Fellows Hiring Portal</p>
           </div>
@@ -1255,7 +1255,7 @@ function HiringPortal() {
                 type="email"
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                 placeholder="admin@avantifellows.org"
                 onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
               />
@@ -1266,14 +1266,14 @@ function HiringPortal() {
                 type="password"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                 placeholder="••••••••"
                 onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
               />
             </div>
             <button
               onClick={handleLogin}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="w-full bg-gradient-to-r from-yellow-500 to-red-500 text-white py-3 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-colors font-medium"
             >
               Login
             </button>
@@ -1338,7 +1338,7 @@ function HiringPortal() {
                 <textarea
                   value={emailTemplates.shortlisted}
                   onChange={(e) => setEmailTemplates({...emailTemplates, shortlisted: e.target.value})}
-                  className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                   disabled={userRole !== 'super_admin'}
                 />
                 <p className="text-xs text-gray-500 mt-2">Use {'{name}'} and {'{position}'} as placeholders</p>
@@ -1396,7 +1396,7 @@ function HiringPortal() {
                     type="text"
                     value={newAdmin.name}
                     onChange={(e) => setNewAdmin({...newAdmin, name: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     placeholder="Admin Name"
                   />
                 </div>
@@ -1406,7 +1406,7 @@ function HiringPortal() {
                     type="email"
                     value={newAdmin.email}
                     onChange={(e) => setNewAdmin({...newAdmin, email: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     placeholder="admin@example.com"
                   />
                 </div>
@@ -1416,7 +1416,7 @@ function HiringPortal() {
                     type="password"
                     value={newAdmin.password}
                     onChange={(e) => setNewAdmin({...newAdmin, password: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     placeholder="••••••••"
                   />
                 </div>
@@ -1425,7 +1425,7 @@ function HiringPortal() {
                   <select
                     value={newAdmin.role}
                     onChange={(e) => setNewAdmin({...newAdmin, role: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                   >
                     <option value="admin">Admin</option>
                     <option value="viewer">Viewer</option>
@@ -1605,7 +1605,7 @@ function HiringPortal() {
             <select
               value={selectedProfile}
               onChange={(e) => setSelectedProfile(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
             >
               <option value="All">All Profiles</option>
               <option value="Teacher">Teacher</option>
@@ -1636,7 +1636,7 @@ function HiringPortal() {
                 <p><strong>Email:</strong> {candidate.email}</p>
                 <p><strong>Phone:</strong> {candidate.phone}</p>
                 {candidate.resumeURL && (
-                  <a href={candidate.resumeURL} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  <a href={candidate.resumeURL} target="_blank" rel="noopener noreferrer" className="bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent hover:underline">
                     View Resume
                   </a>
                 )}
@@ -1662,7 +1662,7 @@ function HiringPortal() {
                     value={candidate.screening || 'No'}
                     onChange={(e) => updateCandidate(candidate.id, 'screening', e.target.value, candidate)}
                     disabled={userRole === 'viewer'}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
                   >
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
@@ -1675,7 +1675,7 @@ function HiringPortal() {
                     value={candidate.fits || 'No'}
                     onChange={(e) => updateCandidate(candidate.id, 'fits', e.target.value, candidate)}
                     disabled={userRole === 'viewer'}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
                   >
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
@@ -1688,7 +1688,7 @@ function HiringPortal() {
                     value={candidate.status || 'Pending'}
                     onChange={(e) => updateCandidate(candidate.id, 'status', e.target.value, candidate)}
                     disabled={userRole === 'viewer'}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
                   >
                     <option value="Pending">Pending</option>
                     <option value="Shortlisted">Shortlisted</option>
