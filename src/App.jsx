@@ -7,12 +7,12 @@ import { Send, Filter, Users, UserCheck, UserX, Clock, Settings, LogOut, Eye, Up
 
 // Firebase Configuration - REPLACE WITH YOUR CONFIG
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAT-pJd8imqgq9k2P1fuKJqj9H03gMF3rs",
+  authDomain: "avanti-hiring-portal.firebaseapp.com",
+  projectId: "avanti-hiring-portal",
+  storageBucket: "avanti-hiring-portal.firebasestorage.app",
+  messagingSenderId: "544084510109",
+  appId: "1:544084510109:web:9c1e1e6b45d0fb097f9b74"
 };
 
 // Initialize Firebase
@@ -23,7 +23,7 @@ const storage = getStorage(app);
 
 // EmailJS Configuration
 const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID";
-const EMAILJS_PUBLIC_KEY = "YOUR_PUBLIC_KEY";
+const EMAILJS_PUBLIC_KEY = "0ZZohllMdqRrY6rSB";
 
 // Indian States
 const INDIAN_STATES = [
