@@ -22,7 +22,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // EmailJS Configuration
-const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID";
+const EMAILJS_SERVICE_ID = "service_fpfz7ze";
 const EMAILJS_PUBLIC_KEY = "0ZZohllMdqRrY6rSB";
 
 // Indian States
