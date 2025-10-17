@@ -764,15 +764,15 @@ function HiringPortal() {
   };
 
   const handleAddJob = async () => {
-    if (userRole !== 'super_admin') {
-      alert('Only Super Admins can add jobs');
-      return;
-    }
+  if (userRole !== 'super_admin') {
+    alert('Only Super Admins can add jobs');
+    return;
+  }
 
-    if (!newJob.title || !newJob.department || !newJob.location || !newJob.description) {
-      alert('Please fill all required fields');
-      return;
-    }
+  if (!newJob.title || !newJob.department || !newJob.location || !newJob.deadline) {
+  alert('Please fill all required fields: Title, Department, Location, and Deadline');
+  return;
+}
 
     try {
       await addDoc(collection(db, 'jobs'), {
