@@ -886,7 +886,7 @@ function HiringPortal() {
   {/* Hero Section with Background Image */}
   <div className="relative h-96 mb-12 rounded-2xl overflow-hidden shadow-2xl">
     <img 
-      src="https://youtu.be/UtsZEQGEEz4?si=CHieO1sPd6WxF4VY" 
+      src="https://pixabay.com/illustrations/avanti-jnv-bharuch-ai-generated-9900556/" 
       alt="Team collaboration" 
       className="w-full h-full object-cover"
     />
