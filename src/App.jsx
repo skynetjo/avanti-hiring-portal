@@ -886,7 +886,7 @@ function HiringPortal() {
   {/* Hero Section with Background Image */}
   <div className="relative h-96 mb-12 rounded-2xl overflow-hidden shadow-2xl">
     <img 
-      src="https://unsplash.com/photos/RDMSeixOI8o" 
+      src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=600&fit=crop" 
       alt="Team collaboration" 
       className="w-full h-full object-cover"
     />
