@@ -3,9 +3,9 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, query, where, deleteDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Send, Filter, Users, UserCheck, UserX, Clock, Settings, LogOut, Eye, Upload, UserPlus, Trash2, Home, Shield, Plus, X } from 'lucide-react';
+import { Send, Filter, Users, UserCheck, UserX, Clock, Settings, LogOut, Eye, Upload, UserPlus, Trash2, Home, Shield, Plus, X, Briefcase, MapPin, Building } from 'lucide-react';
 
-// Firebase Configuration - REPLACE WITH YOUR CONFIG
+// Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAT-pJd8imqgq9k2P1fuKJqj9H03gMF3rs",
   authDomain: "avanti-hiring-portal.firebaseapp.com",
@@ -15,17 +15,14 @@ const firebaseConfig = {
   appId: "1:544084510109:web:9c1e1e6b45d0fb097f9b74"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// EmailJS Configuration
 const EMAILJS_SERVICE_ID = "service_fpfz7ze";
 const EMAILJS_PUBLIC_KEY = "0ZZohllMdqRrY6rSB";
 
-// Indian States
 const INDIAN_STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
   "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
@@ -35,7 +32,6 @@ const INDIAN_STATES = [
   "Uttar Pradesh", "Uttarakhand", "West Bengal"
 ];
 
-// Districts by State (Major ones)
 const DISTRICTS = {
   "Andhra Pradesh": ["Anantapur", "Chittoor", "East Godavari", "Guntur", "Krishna", "Kurnool", "Prakasam", "Srikakulam", "Visakhapatnam", "Vizianagaram", "West Godavari", "YSR Kadapa"],
   "Karnataka": ["Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural", "Bengaluru Urban", "Bidar", "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada", "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar", "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru", "Udupi", "Uttara Kannada", "Vijayapura", "Yadgir"],
@@ -45,7 +41,6 @@ const DISTRICTS = {
   "Uttar Pradesh": ["Agra", "Aligarh", "Allahabad", "Ambedkar Nagar", "Amethi", "Amroha", "Auraiya", "Azamgarh", "Baghpat", "Bahraich", "Ballia", "Balrampur", "Banda", "Barabanki", "Bareilly", "Basti", "Bhadohi", "Bijnor", "Budaun", "Bulandshahr", "Chandauli", "Chitrakoot", "Deoria", "Etah", "Etawah", "Faizabad", "Farrukhabad", "Fatehpur", "Firozabad", "Gautam Buddha Nagar", "Ghaziabad", "Ghazipur", "Gonda", "Gorakhpur", "Hamirpur", "Hapur", "Hardoi", "Hathras", "Jalaun", "Jaunpur", "Jhansi", "Kannauj", "Kanpur Dehat", "Kanpur Nagar", "Kasganj", "Kaushambi", "Kushinagar", "Lakhimpur Kheri", "Lalitpur", "Lucknow", "Maharajganj", "Mahoba", "Mainpuri", "Mathura", "Mau", "Meerut", "Mirzapur", "Moradabad", "Muzaffarnagar", "Pilibhit", "Pratapgarh", "Raebareli", "Rampur", "Saharanpur", "Sambhal", "Sant Kabir Nagar", "Shahjahanpur", "Shamli", "Shravasti", "Siddharthnagar", "Sitapur", "Sonbhadra", "Sultanpur", "Unnao", "Varanasi"]
 };
 
-// Major Indian Colleges
 const INDIAN_COLLEGES = [
   "IIT Bombay", "IIT Delhi", "IIT Madras", "IIT Kanpur", "IIT Kharagpur",
   "IIT Roorkee", "IIT Guwahati", "IIT Hyderabad", "IIT Indore", "IIT BHU",
@@ -67,14 +62,17 @@ function HiringPortal() {
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('home');
+  const [currentView, setCurrentView] = useState('job-listings');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [candidates, setCandidates] = useState([]);
   const [filteredCandidates, setFilteredCandidates] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState('All');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState('All');
+  const [jobs, setJobs] = useState([]);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [jobFilters, setJobFilters] = useState({ department: 'All', location: 'All' });
   
-  // Form Data
   const [formData, setFormData] = useState({
     resume: null,
     name: '',
@@ -82,6 +80,7 @@ function HiringPortal() {
     phone: '',
     dob: '',
     gender: '',
+    jobId: '',
     profile: '',
     experience: '',
     currentSalary: '',
@@ -108,21 +107,34 @@ function HiringPortal() {
     }],
     motivation: '',
     payCut: '',
+    howHeard: '',
+    referrerName: '',
     privacyConsent: false
   });
 
   const [submitting, setSubmitting] = useState(false);
   const [emailTemplates, setEmailTemplates] = useState({
     rejected: `Dear {name},\n\nThank you for your interest in the {position} position at Avanti Fellows.\n\nAfter careful consideration, we regret to inform you that we will not be moving forward with your application at this time.\n\nWe encourage you to apply for future opportunities.\n\nBest regards,\nAvanti Fellows Team`,
-    shortlisted: `Dear {name},\n\nCongratulations! You have been shortlisted for the {position} position at Avanti Fellows.\n\nWe will contact you within 2-3 business days.\n\nBest regards,\nAvanti Fellows Team`
+    shortlisted: `Dear {name},\n\nCongratulations! You have been shortlisted for the {position} position at Avanti Fellows.\n\nWe will contact you within 2-3 business days.\n\nBest regards,\nAvanti Fellows Team`,
+    applicationReceived: `Dear {name},\n\nThank you for applying to the {position} position at Avanti Fellows.\n\nWe have received your application and our team will review it shortly. We will get back to you soon.\n\nBest regards,\nAvanti Fellows Team`
   });
-  const [admins, setAdmins] = useState([]);
-  const [newAdmin, setNewAdmin] = useState({
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [newTeamMember, setNewTeamMember] = useState({
     email: '',
     password: '',
-    role: 'admin',
+    role: 'guest',
     name: ''
   });
+  const [newJob, setNewJob] = useState({
+    title: '',
+    department: '',
+    location: '',
+    description: '',
+    requirements: '',
+    salary: '',
+    isActive: true
+  });
+  const [editingJob, setEditingJob] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
     contacted: 0,
@@ -130,7 +142,8 @@ function HiringPortal() {
     fits: 0,
     shortlisted: 0,
     rejected: 0,
-    notContacted: 0
+    notContacted: 0,
+    hired: 0
   });
 
   useEffect(() => {
@@ -139,8 +152,9 @@ function HiringPortal() {
       if (user) {
         await loadUserRole(user.uid);
         loadCandidates();
-        loadAdmins();
+        loadTeamMembers();
         loadEmailTemplates();
+        loadJobs();
       } else {
         setUserRole(null);
       }
@@ -150,12 +164,8 @@ function HiringPortal() {
   }, []);
 
   useEffect(() => {
-    if (selectedProfile === 'All') {
-      setFilteredCandidates(candidates);
-    } else {
-      setFilteredCandidates(candidates.filter(c => c.profile === selectedProfile));
-    }
-  }, [selectedProfile, candidates]);
+    applyFilters();
+  }, [selectedProfile, selectedStatusFilter, candidates]);
 
   useEffect(() => {
     calculateStats();
@@ -163,10 +173,10 @@ function HiringPortal() {
 
   const loadUserRole = async (uid) => {
     try {
-      const adminsSnapshot = await getDocs(collection(db, 'admins'));
-      const adminDoc = adminsSnapshot.docs.find(doc => doc.data().uid === uid);
-      if (adminDoc) {
-        setUserRole(adminDoc.data().role);
+      const membersSnapshot = await getDocs(collection(db, 'teamMembers'));
+      const memberDoc = membersSnapshot.docs.find(doc => doc.data().uid === uid);
+      if (memberDoc) {
+        setUserRole(memberDoc.data().role);
         setCurrentView('admin-dashboard');
       }
     } catch (error) {
@@ -187,16 +197,29 @@ function HiringPortal() {
     }
   };
 
-  const loadAdmins = async () => {
+  const loadTeamMembers = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, 'admins'));
-      const adminsData = querySnapshot.docs.map(doc => ({
+      const querySnapshot = await getDocs(collection(db, 'teamMembers'));
+      const membersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      setAdmins(adminsData);
+      setTeamMembers(membersData);
     } catch (error) {
-      console.error('Error loading admins:', error);
+      console.error('Error loading team members:', error);
+    }
+  };
+
+  const loadJobs = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'jobs'));
+      const jobsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setJobs(jobsData);
+    } catch (error) {
+      console.error('Error loading jobs:', error);
     }
   };
 
@@ -214,6 +237,34 @@ function HiringPortal() {
     }
   };
 
+  const applyFilters = () => {
+    let filtered = [...candidates];
+    
+    if (selectedProfile !== 'All') {
+      filtered = filtered.filter(c => c.profile === selectedProfile);
+    }
+    
+    if (selectedStatusFilter !== 'All') {
+      if (selectedStatusFilter === 'Not Contacted') {
+        filtered = filtered.filter(c => c.contacted === 'No');
+      } else if (selectedStatusFilter === 'Contacted') {
+        filtered = filtered.filter(c => c.contacted === 'Yes');
+      } else if (selectedStatusFilter === 'Screening') {
+        filtered = filtered.filter(c => c.screening === 'Yes');
+      } else if (selectedStatusFilter === 'Fits') {
+        filtered = filtered.filter(c => c.fits === 'Yes');
+      } else if (selectedStatusFilter === 'Shortlisted') {
+        filtered = filtered.filter(c => c.status === 'Shortlisted');
+      } else if (selectedStatusFilter === 'Rejected') {
+        filtered = filtered.filter(c => c.status === 'Rejected');
+      } else if (selectedStatusFilter === 'Hired') {
+        filtered = filtered.filter(c => c.status === 'Hired');
+      }
+    }
+    
+    setFilteredCandidates(filtered);
+  };
+
   const calculateStats = () => {
     const total = filteredCandidates.length;
     const contacted = filteredCandidates.filter(c => c.contacted === 'Yes').length;
@@ -221,8 +272,9 @@ function HiringPortal() {
     const fits = filteredCandidates.filter(c => c.fits === 'Yes').length;
     const shortlisted = filteredCandidates.filter(c => c.status === 'Shortlisted').length;
     const rejected = filteredCandidates.filter(c => c.status === 'Rejected').length;
+    const hired = filteredCandidates.filter(c => c.status === 'Hired').length;
     const notContacted = filteredCandidates.filter(c => c.contacted === 'No').length;
-    setStats({ total, contacted, screening, fits, shortlisted, rejected, notContacted });
+    setStats({ total, contacted, screening, fits, shortlisted, rejected, notContacted, hired });
   };
 
   const handleLogin = async () => {
@@ -240,9 +292,28 @@ function HiringPortal() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      setCurrentView('home');
+      setCurrentView('job-listings');
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  };
+
+  const checkRecentApplication = async (email, phone) => {
+    try {
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      
+      const candidatesSnapshot = await getDocs(collection(db, 'candidates'));
+      const recentApplication = candidatesSnapshot.docs.find(doc => {
+        const data = doc.data();
+        const submittedDate = new Date(data.submittedAt);
+        return (data.email === email || data.phone === phone) && submittedDate > sixMonthsAgo;
+      });
+      
+      return recentApplication !== undefined;
+    } catch (error) {
+      console.error('Error checking recent application:', error);
+      return false;
     }
   };
 
@@ -351,7 +422,49 @@ function HiringPortal() {
     }));
   };
 
+  const sendEmail = async (candidate, type) => {
+    try {
+      const template = emailTemplates[type];
+      const emailBody = template
+        .replace(/{name}/g, candidate.name)
+        .replace(/{position}/g, candidate.profile);
+
+      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          service_id: EMAILJS_SERVICE_ID,
+          template_id: `template_${type}`,
+          user_id: EMAILJS_PUBLIC_KEY,
+          template_params: {
+            to_email: candidate.email,
+            to_name: candidate.name,
+            message: emailBody,
+            position: candidate.profile
+          }
+        })
+      });
+
+      if (response.ok) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error sending email:', error);
+      return false;
+    }
+  };
+
   const handleFormSubmit = async () => {
+    // Check for recent application
+    const hasRecentApplication = await checkRecentApplication(formData.email, formData.phone);
+    if (hasRecentApplication) {
+      alert('You have already applied within the last 6 months. Please wait before applying again.');
+      return;
+    }
+
     // Validation
     if (!formData.resume) {
       alert('Please upload your resume (PDF format)');
@@ -361,12 +474,16 @@ function HiringPortal() {
         !formData.gender || !formData.profile || !formData.experience || 
         !formData.currentSalary || !formData.availableToJoin || !formData.homeState || 
         !formData.homeDistrict || !formData.currentState || !formData.motivation || 
-        !formData.payCut) {
+        !formData.payCut || !formData.howHeard) {
       alert('Please fill all required fields marked with *');
       return;
     }
     
-    // Validate education
+    if (formData.howHeard === 'Referral' && !formData.referrerName) {
+      alert('Please provide the employee name who referred you');
+      return;
+    }
+    
     const hasValidEducation = formData.education.some(edu => 
       edu.qualification && edu.college && edu.year
     );
@@ -387,28 +504,18 @@ function HiringPortal() {
       let photoURL = '';
       let additionalDocsURLs = [];
 
-      // Check if Firebase is configured
-      if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-        alert('Firebase is not configured yet. Please update the Firebase configuration in the code.');
-        setSubmitting(false);
-        return;
-      }
-
-      // Upload resume
       if (formData.resume) {
         const resumeRef = ref(storage, `resumes/${Date.now()}_${formData.resume.name}`);
         await uploadBytes(resumeRef, formData.resume);
         resumeURL = await getDownloadURL(resumeRef);
       }
 
-      // Upload photo
       if (formData.photo) {
         const photoRef = ref(storage, `candidate-photos/${Date.now()}_${formData.photo.name}`);
         await uploadBytes(photoRef, formData.photo);
         photoURL = await getDownloadURL(photoRef);
       }
 
-      // Upload additional documents
       for (const doc of formData.additionalDocs) {
         const docRef = ref(storage, `additional-docs/${Date.now()}_${doc.name}`);
         await uploadBytes(docRef, doc);
@@ -416,14 +523,14 @@ function HiringPortal() {
         additionalDocsURLs.push({ name: doc.name, url: docURL });
       }
 
-      // Add candidate to Firestore
-      await addDoc(collection(db, 'candidates'), {
+      const candidateData = {
         resumeURL,
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         dob: formData.dob,
         gender: formData.gender,
+        jobId: formData.jobId,
         profile: formData.profile,
         experience: formData.experience,
         currentSalary: formData.currentSalary,
@@ -437,14 +544,25 @@ function HiringPortal() {
         workExperience: formData.workExperience,
         motivation: formData.motivation,
         payCut: formData.payCut,
+        howHeard: formData.howHeard,
+        referrerName: formData.referrerName || '',
         contacted: 'No',
         screening: 'No',
         fits: 'No',
         status: 'Pending',
         submittedAt: new Date().toISOString()
-      });
+      };
 
-      alert('✅ Application submitted successfully! We will contact you soon.');
+      await addDoc(collection(db, 'candidates'), candidateData);
+
+      // Send application received email
+      await sendEmail({
+        name: formData.name,
+        email: formData.email,
+        profile: formData.profile
+      }, 'applicationReceived');
+
+      alert('✅ Application submitted successfully! We will contact you soon. Please check your email for confirmation.');
       
       // Reset form
       setFormData({
@@ -454,6 +572,7 @@ function HiringPortal() {
         phone: '',
         dob: '',
         gender: '',
+        jobId: '',
         profile: '',
         experience: '',
         currentSalary: '',
@@ -480,36 +599,37 @@ function HiringPortal() {
         }],
         motivation: '',
         payCut: '',
+        howHeard: '',
+        referrerName: '',
         privacyConsent: false
       });
 
-      // Reset file inputs
       document.querySelectorAll('input[type="file"]').forEach(input => input.value = '');
+      setCurrentView('job-listings');
 
     } catch (error) {
       console.error('Error submitting application:', error);
-      let errorMessage = 'Failed to submit application. ';
-      
-      if (error.code === 'storage/unauthorized') {
-        errorMessage += 'Storage permission error. Please check Firebase Storage rules.';
-      } else if (error.code === 'permission-denied') {
-        errorMessage += 'Permission denied. Please check Firestore rules.';
-      } else if (error.message) {
-        errorMessage += error.message;
-      } else {
-        errorMessage += 'Please check your internet connection and try again.';
-      }
-      
-      alert(errorMessage);
+      alert('Failed to submit application. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
   const updateCandidate = async (candidateId, field, value, candidate) => {
-    if (userRole === 'viewer') {
+    if (userRole === 'guest') {
       alert('You do not have permission to edit candidates');
       return;
+    }
+
+    // Show confirmation for status changes that trigger emails
+    if (field === 'status' && (value === 'Rejected' || value === 'Shortlisted')) {
+      const confirmed = window.confirm(
+        `An email will be sent to ${candidate.name} (${candidate.email}) informing them about being ${value.toLowerCase()}. Do you want to continue?`
+      );
+      
+      if (!confirmed) {
+        return;
+      }
     }
 
     try {
@@ -517,7 +637,12 @@ function HiringPortal() {
       await updateDoc(candidateRef, { [field]: value });
       
       if (field === 'status' && (value === 'Rejected' || value === 'Shortlisted')) {
-        await sendEmail(candidate, value.toLowerCase());
+        const emailSent = await sendEmail(candidate, value.toLowerCase());
+        if (emailSent) {
+          alert(`Email sent successfully to ${candidate.name}`);
+        } else {
+          alert('Failed to send email, but status was updated');
+        }
       }
       
       loadCandidates();
@@ -527,36 +652,21 @@ function HiringPortal() {
     }
   };
 
-  const sendEmail = async (candidate, type) => {
-    try {
-      const template = type === 'rejected' ? emailTemplates.rejected : emailTemplates.shortlisted;
-      const emailBody = template
-        .replace(/{name}/g, candidate.name)
-        .replace(/{position}/g, candidate.profile);
+  const deleteCandidate = async (candidateId, candidateName) => {
+    if (userRole !== 'super_admin') {
+      alert('Only Super Admins can delete candidate profiles');
+      return;
+    }
 
-      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          service_id: EMAILJS_SERVICE_ID,
-          template_id: type === 'rejected' ? 'template_rejected' : 'template_shortlisted',
-          user_id: EMAILJS_PUBLIC_KEY,
-          template_params: {
-            to_email: candidate.email,
-            to_name: candidate.name,
-            message: emailBody,
-            position: candidate.profile
-          }
-        })
-      });
-
-      if (response.ok) {
-        alert(`Email sent successfully to ${candidate.name}`);
+    if (confirm(`Are you sure you want to delete ${candidateName}'s profile? This action cannot be undone.`)) {
+      try {
+        await deleteDoc(doc(db, 'candidates', candidateId));
+        alert('Candidate profile deleted successfully');
+        loadCandidates();
+      } catch (error) {
+        console.error('Error deleting candidate:', error);
+        alert('Failed to delete candidate profile');
       }
-    } catch (error) {
-      console.error('Error sending email:', error);
     }
   };
 
@@ -591,60 +701,151 @@ function HiringPortal() {
     }
   };
 
-  const handleAddAdmin = async () => {
+  const handleAddTeamMember = async () => {
     if (userRole !== 'super_admin') {
-      alert('Only Super Admins can add new admins');
+      alert('Only Super Admins can add team members');
       return;
     }
 
-    if (!newAdmin.email || !newAdmin.password || !newAdmin.name) {
+    if (!newTeamMember.email || !newTeamMember.password || !newTeamMember.name) {
       alert('Please fill all fields');
       return;
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, newAdmin.email, newAdmin.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, newTeamMember.email, newTeamMember.password);
       
-      await addDoc(collection(db, 'admins'), {
+      await addDoc(collection(db, 'teamMembers'), {
         uid: userCredential.user.uid,
-        email: newAdmin.email,
-        name: newAdmin.name,
-        role: newAdmin.role,
+        email: newTeamMember.email,
+        name: newTeamMember.name,
+        role: newTeamMember.role,
         createdAt: new Date().toISOString()
       });
 
-      alert('Admin added successfully!');
-      setNewAdmin({ email: '', password: '', role: 'admin', name: '' });
-      loadAdmins();
+      alert('Team member added successfully!');
+      setNewTeamMember({ email: '', password: '', role: 'guest', name: '' });
+      loadTeamMembers();
       
       await signInWithEmailAndPassword(auth, user.email, loginPassword);
     } catch (error) {
-      console.error('Error adding admin:', error);
-      alert('Failed to add admin: ' + error.message);
+      console.error('Error adding team member:', error);
+      alert('Failed to add team member: ' + error.message);
     }
   };
 
-  const handleDeleteAdmin = async (adminId, adminEmail) => {
+  const handleDeleteTeamMember = async (memberId, memberEmail) => {
     if (userRole !== 'super_admin') {
-      alert('Only Super Admins can delete admins');
+      alert('Only Super Admins can delete team members');
       return;
     }
 
-    if (adminEmail === user.email) {
+    if (memberEmail === user.email) {
       alert('You cannot delete yourself!');
       return;
     }
 
-    if (confirm(`Are you sure you want to delete ${adminEmail}?`)) {
+    if (confirm(`Are you sure you want to delete ${memberEmail}?`)) {
       try {
-        await deleteDoc(doc(db, 'admins', adminId));
-        alert('Admin deleted successfully!');
-        loadAdmins();
+        await deleteDoc(doc(db, 'teamMembers', memberId));
+        alert('Team member deleted successfully!');
+        loadTeamMembers();
       } catch (error) {
-        console.error('Error deleting admin:', error);
-        alert('Failed to delete admin');
+        console.error('Error deleting team member:', error);
+        alert('Failed to delete team member');
       }
     }
+  };
+
+  const handleAddJob = async () => {
+    if (userRole !== 'super_admin') {
+      alert('Only Super Admins can add jobs');
+      return;
+    }
+
+    if (!newJob.title || !newJob.department || !newJob.location || !newJob.description) {
+      alert('Please fill all required fields');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'jobs'), {
+        ...newJob,
+        createdAt: new Date().toISOString()
+      });
+
+      alert('Job posted successfully!');
+      setNewJob({
+        title: '',
+        department: '',
+        location: '',
+        description: '',
+        requirements: '',
+        salary: '',
+        isActive: true
+      });
+      loadJobs();
+      setCurrentView('admin-dashboard');
+    } catch (error) {
+      console.error('Error adding job:', error);
+      alert('Failed to add job');
+    }
+  };
+
+  const handleUpdateJob = async () => {
+    if (userRole !== 'super_admin') {
+      alert('Only Super Admins can edit jobs');
+      return;
+    }
+
+    try {
+      const jobRef = doc(db, 'jobs', editingJob.id);
+      await updateDoc(jobRef, {
+        title: editingJob.title,
+        department: editingJob.department,
+        location: editingJob.location,
+        description: editingJob.description,
+        requirements: editingJob.requirements,
+        salary: editingJob.salary,
+        isActive: editingJob.isActive,
+        updatedAt: new Date().toISOString()
+      });
+
+      alert('Job updated successfully!');
+      setEditingJob(null);
+      loadJobs();
+      setCurrentView('admin-dashboard');
+    } catch (error) {
+      console.error('Error updating job:', error);
+      alert('Failed to update job');
+    }
+  };
+
+  const handleDeleteJob = async (jobId, jobTitle) => {
+    if (userRole !== 'super_admin') {
+      alert('Only Super Admins can delete jobs');
+      return;
+    }
+
+    if (confirm(`Are you sure you want to delete "${jobTitle}"?`)) {
+      try {
+        await deleteDoc(doc(db, 'jobs', jobId));
+        alert('Job deleted successfully!');
+        loadJobs();
+      } catch (error) {
+        console.error('Error deleting job:', error);
+        alert('Failed to delete job');
+      }
+    }
+  };
+
+  const getFilteredJobs = () => {
+    return jobs.filter(job => {
+      if (!job.isActive) return false;
+      if (jobFilters.department !== 'All' && job.department !== jobFilters.department) return false;
+      if (jobFilters.location !== 'All' && job.location !== jobFilters.location) return false;
+      return true;
+    });
   };
 
   if (loading) {
@@ -655,10 +856,11 @@ function HiringPortal() {
     );
   }
 
-  // HOME PAGE - Application Form
-  if (currentView === 'home') {
-    const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: currentYear - 1999 }, (_, i) => currentYear - i);
+  // JOB LISTINGS PAGE
+  if (currentView === 'job-listings') {
+    const departments = [...new Set(jobs.map(j => j.department))];
+    const locations = [...new Set(jobs.map(j => j.location))];
+    const filteredJobs = getFilteredJobs();
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50">
@@ -667,7 +869,7 @@ function HiringPortal() {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent">Avanti Fellows</h1>
-                <p className="text-sm text-gray-600">Join Our Team - Career Portal</p>
+                <p className="text-sm text-gray-600">Career Opportunities</p>
               </div>
               <button
                 onClick={() => setCurrentView('admin-login')}
@@ -680,20 +882,178 @@ function HiringPortal() {
           </div>
         </div>
 
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">Join Our Team</h2>
+            <p className="text-gray-600">Explore current opportunities at Avanti Fellows</p>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Department</label>
+                <select
+                  value={jobFilters.department}
+                  onChange={(e) => setJobFilters({...jobFilters, department: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                >
+                  <option value="All">All Departments</option>
+                  {departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Location</label>
+                <select
+                  value={jobFilters.location}
+                  onChange={(e) => setJobFilters({...jobFilters, location: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                >
+                  <option value="All">All Locations</option>
+                  {locations.map(loc => (
+                    <option key={loc} value={loc}>{loc}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filteredJobs.map(job => (
+              <div key={job.id} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{job.title}</h3>
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                  <div className="flex items-center gap-1">
+                    <Building className="w-4 h-4" />
+                    <span>{job.department}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    <span>{job.location}</span>
+                  </div>
+                </div>
+                <p className="text-gray-700 mb-4 line-clamp-3">{job.description}</p>
+                <button
+                  onClick={() => {
+                    setSelectedJob(job);
+                    setCurrentView('job-details');
+                  }}
+                  className="w-full bg-gradient-to-r from-yellow-500 to-red-500 text-white py-2 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-colors font-medium"
+                >
+                  View Details & Apply
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {filteredJobs.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-xl shadow-md">
+              <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600">No job openings match your filters</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // JOB DETAILS PAGE
+  if (currentView === 'job-details' && selectedJob) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50">
+        <div className="bg-white shadow-md">
+          <div className="max-w-6xl mx-auto px-6 py-4">
+            <button
+              onClick={() => setCurrentView('job-listings')}
+              className="text-gray-600 hover:text-gray-800 flex items-center gap-2"
+            >
+              ← Back to Job Listings
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="bg-white rounded-2xl shadow-2xl p-8">
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">{selectedJob.title}</h1>
+            <div className="flex items-center gap-6 text-gray-600 mb-6">
+              <div className="flex items-center gap-2">
+                <Building className="w-5 h-5" />
+                <span>{selectedJob.department}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                <span>{selectedJob.location}</span>
+              </div>
+              {selectedJob.salary && (
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">Salary:</span>
+                  <span>{selectedJob.salary}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-6 mb-8">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800 mb-3">Job Description</h2>
+                <p className="text-gray-700 whitespace-pre-line">{selectedJob.description}</p>
+              </div>
+
+              {selectedJob.requirements && (
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800 mb-3">Requirements</h2>
+                  <p className="text-gray-700 whitespace-pre-line">{selectedJob.requirements}</p>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                setFormData({...formData, jobId: selectedJob.id, profile: selectedJob.title});
+                setCurrentView('application-form');
+              }}
+              className="w-full bg-gradient-to-r from-yellow-500 to-red-500 text-white py-4 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-all font-semibold text-lg shadow-lg"
+            >
+              Apply for this Job
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // APPLICATION FORM
+  if (currentView === 'application-form') {
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: currentYear - 1999 }, (_, i) => currentYear - i);
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50">
+        <div className="bg-white shadow-md">
+          <div className="max-w-6xl mx-auto px-6 py-4">
+            <button
+              onClick={() => setCurrentView('job-details')}
+              className="text-gray-600 hover:text-gray-800 flex items-center gap-2"
+            >
+              ← Back to Job Details
+            </button>
+          </div>
+        </div>
+
         <div className="max-w-5xl mx-auto px-6 py-8">
           <div className="bg-white rounded-2xl shadow-2xl p-8">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">Apply for a Position</h2>
-              <p className="text-gray-600">Fill out the form below to submit your application</p>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">Application Form</h2>
+              <p className="text-gray-600">Applying for: <strong>{formData.profile}</strong></p>
             </div>
 
             <div className="space-y-8">
-              {/* Resume Upload - FIRST */}
+              {/* Resume Upload */}
               <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
                 <label className="block text-lg font-semibold text-gray-800 mb-3">
                   Upload Your Resume <span className="text-red-500">*</span>
                 </label>
-                <p className="text-sm text-gray-600 mb-4">Upload your resume (PDF only, max 5MB). We'll try to auto-fill some details.</p>
+                <p className="text-sm text-gray-600 mb-4">Upload your resume (PDF only, max 5MB)</p>
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-lg cursor-pointer hover:from-yellow-600 hover:to-red-600 transition-colors">
                     <Upload className="w-5 h-5" />
@@ -816,24 +1176,6 @@ function HiringPortal() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Position Applied For <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="profile"
-                      value={formData.profile}
-                      onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    >
-                      <option value="">Select Position</option>
-                      <option value="Teacher">Teacher</option>
-                      <option value="Program Manager">Program Manager</option>
-                      <option value="Coordinator">Coordinator</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Total Years of Experience <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -879,6 +1221,41 @@ function HiringPortal() {
                       ))}
                     </select>
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      How did you hear about this job? <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="howHeard"
+                      value={formData.howHeard}
+                      onChange={handleFormChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="">Select Option</option>
+                      <option value="Social Media">Social Media</option>
+                      <option value="LinkedIn">LinkedIn</option>
+                      <option value="Referral">Referral</option>
+                      <option value="Google/Bing Search">Google/Bing Search</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  {formData.howHeard === 'Referral' && (
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Employee Name (Referrer) <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="referrerName"
+                        value={formData.referrerName}
+                        onChange={handleFormChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                        placeholder="Enter the name of the employee who referred you"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1244,7 +1621,7 @@ function HiringPortal() {
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
           <div className="text-center mb-8">
-            <Shield className="w-16 h-16 bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent mx-auto mb-4" />
+            <Shield className="w-16 h-16 mx-auto mb-4 text-orange-600" />
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Admin Login</h1>
             <p className="text-gray-600">Avanti Fellows Hiring Portal</p>
           </div>
@@ -1278,7 +1655,7 @@ function HiringPortal() {
               Login
             </button>
             <button
-              onClick={() => setCurrentView('home')}
+              onClick={() => setCurrentView('job-listings')}
               className="w-full text-gray-600 py-2 hover:text-gray-800"
             >
               ← Back to Home
@@ -1296,7 +1673,7 @@ function HiringPortal() {
         <div className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-gray-800">Email Template Settings</h1>
+              <h1 className="text-2xl font-bold text-gray-800">Settings</h1>
               <button
                 onClick={() => setCurrentView('admin-dashboard')}
                 className="text-gray-600 hover:text-gray-800"
@@ -1307,51 +1684,148 @@ function HiringPortal() {
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            {userRole !== 'super_admin' && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <p className="text-yellow-800 text-sm">
-                  <strong>Note:</strong> Only Super Admins can edit email templates.
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Rejection Email Template
-                </label>
-                <textarea
-                  value={emailTemplates.rejected}
-                  onChange={(e) => setEmailTemplates({...emailTemplates, rejected: e.target.value})}
-                  className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                  disabled={userRole !== 'super_admin'}
-                />
-                <p className="text-xs text-gray-500 mt-2">Use {'{name}'} and {'{position}'} as placeholders</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Shortlisted Email Template
-                </label>
-                <textarea
-                  value={emailTemplates.shortlisted}
-                  onChange={(e) => setEmailTemplates({...emailTemplates, shortlisted: e.target.value})}
-                  className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                  disabled={userRole !== 'super_admin'}
-                />
-                <p className="text-xs text-gray-500 mt-2">Use {'{name}'} and {'{position}'} as placeholders</p>
-              </div>
-
-              {userRole === 'super_admin' && (
-                <button
-                  onClick={saveEmailTemplates}
-                  className="w-full bg-gradient-to-r from-yellow-500 to-red-500 text-white py-3 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-all font-medium shadow-md"
-                >
-                  Save Templates
-                </button>
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Email Templates */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">Email Templates</h2>
+              {userRole !== 'super_admin' && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                  <p className="text-yellow-800 text-sm">
+                    <strong>Note:</strong> Only Super Admins can edit email templates.
+                  </p>
+                </div>
               )}
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Application Received Email
+                  </label>
+                  <textarea
+                    value={emailTemplates.applicationReceived}
+                    onChange={(e) => setEmailTemplates({...emailTemplates, applicationReceived: e.target.value})}
+                    className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    disabled={userRole !== 'super_admin'}
+                  />
+                  <p className="text-xs text-gray-500 mt-2">Use {'{name}'} and {'{position}'} as placeholders</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Rejection Email Template
+                  </label>
+                  <textarea
+                    value={emailTemplates.rejected}
+                    onChange={(e) => setEmailTemplates({...emailTemplates, rejected: e.target.value})}
+                    className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    disabled={userRole !== 'super_admin'}
+                  />
+                  <p className="text-xs text-gray-500 mt-2">Use {'{name}'} and {'{position}'} as placeholders</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Shortlisted Email Template
+                  </label>
+                  <textarea
+                    value={emailTemplates.shortlisted}
+                    onChange={(e) => setEmailTemplates({...emailTemplates, shortlisted: e.target.value})}
+                    className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    disabled={userRole !== 'super_admin'}
+                  />
+                  <p className="text-xs text-gray-500 mt-2">Use {'{name}'} and {'{position}'} as placeholders</p>
+                </div>
+
+                {userRole === 'super_admin' && (
+                  <button
+                    onClick={saveEmailTemplates}
+                    className="w-full bg-gradient-to-r from-yellow-500 to-red-500 text-white py-3 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-all font-medium shadow-md"
+                  >
+                    Save Templates
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Team Members */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">Team Members</h2>
+              
+              {userRole === 'super_admin' && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-semibold text-gray-800 mb-3">Add New Team Member</h3>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder="Full Name"
+                      value={newTeamMember.name}
+                      onChange={(e) => setNewTeamMember({...newTeamMember, name: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email ID"
+                      value={newTeamMember.email}
+                      onChange={(e) => setNewTeamMember({...newTeamMember, email: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      value={newTeamMember.password}
+                      onChange={(e) => setNewTeamMember({...newTeamMember, password: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    />
+                    <select
+                      value={newTeamMember.role}
+                      onChange={(e) => setNewTeamMember({...newTeamMember, role: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="guest">Guest (View Only)</option>
+                      <option value="program_manager">Program Manager</option>
+                      <option value="admin">Admin</option>
+                      <option value="super_admin">Super Admin</option>
+                    </select>
+                    <button
+                      onClick={handleAddTeamMember}
+                      className="w-full bg-gradient-to-r from-yellow-500 to-red-500 text-white py-2 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-colors"
+                    >
+                      <UserPlus className="w-4 h-4 inline mr-2" />
+                      Add Team Member
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {teamMembers.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800">{member.name}</h3>
+                      <p className="text-sm text-gray-600">{member.email}</p>
+                      <span className={`inline-block mt-1 px-2 py-1 text-xs rounded-full ${
+                        member.role === 'super_admin' ? 'bg-red-100 text-red-800' :
+                        member.role === 'admin' ? 'bg-yellow-100 text-yellow-800' :
+                        member.role === 'program_manager' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {member.role === 'super_admin' ? 'Super Admin' : 
+                         member.role === 'admin' ? 'Admin' :
+                         member.role === 'program_manager' ? 'Program Manager' : 'Guest'}
+                      </span>
+                    </div>
+                    {userRole === 'super_admin' && member.email !== user.email && (
+                      <button
+                        onClick={() => handleDeleteTeamMember(member.id, member.email)}
+                        className="text-red-600 hover:text-red-800 p-2"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -1359,14 +1833,14 @@ function HiringPortal() {
     );
   }
 
-  // MANAGE ADMINS PAGE
-  if (currentView === 'manage-admins') {
+  // MANAGE JOBS PAGE
+  if (currentView === 'manage-jobs') {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-gray-800">Manage Admins</h1>
+              <h1 className="text-2xl font-bold text-gray-800">Manage Job Openings</h1>
               <button
                 onClick={() => setCurrentView('admin-dashboard')}
                 className="text-gray-600 hover:text-gray-800"
@@ -1381,96 +1855,223 @@ function HiringPortal() {
           {userRole !== 'super_admin' && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
               <p className="text-yellow-800 text-sm">
-                <strong>Note:</strong> Only Super Admins can add or delete admin accounts.
+                <strong>Note:</strong> Only Super Admins can add, edit, or delete jobs.
               </p>
             </div>
           )}
 
-          {userRole === 'super_admin' && (
+          {userRole === 'super_admin' && !editingJob && (
             <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">Add New Admin</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">Add New Job</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Title *</label>
                   <input
                     type="text"
-                    value={newAdmin.name}
-                    onChange={(e) => setNewAdmin({...newAdmin, name: e.target.value})}
+                    value={newJob.title}
+                    onChange={(e) => setNewJob({...newJob, title: e.target.value})}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    placeholder="Admin Name"
+                    placeholder="e.g., Physics Teacher"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Department *</label>
                   <input
-                    type="email"
-                    value={newAdmin.email}
-                    onChange={(e) => setNewAdmin({...newAdmin, email: e.target.value})}
+                    type="text"
+                    value={newJob.department}
+                    onChange={(e) => setNewJob({...newJob, department: e.target.value})}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    placeholder="admin@example.com"
+                    placeholder="e.g., Teaching"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location *</label>
                   <input
-                    type="password"
-                    value={newAdmin.password}
-                    onChange={(e) => setNewAdmin({...newAdmin, password: e.target.value})}
+                    type="text"
+                    value={newJob.location}
+                    onChange={(e) => setNewJob({...newJob, location: e.target.value})}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    placeholder="••••••••"
+                    placeholder="e.g., Bangalore, Karnataka"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                  <select
-                    value={newAdmin.role}
-                    onChange={(e) => setNewAdmin({...newAdmin, role: e.target.value})}
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Salary Range</label>
+                  <input
+                    type="text"
+                    value={newJob.salary}
+                    onChange={(e) => setNewJob({...newJob, salary: e.target.value})}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="viewer">Viewer</option>
-                    <option value="super_admin">Super Admin</option>
-                  </select>
+                    placeholder="e.g., ₹3-5 LPA"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Description *</label>
+                  <textarea
+                    value={newJob.description}
+                    onChange={(e) => setNewJob({...newJob, description: e.target.value})}
+                    className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    placeholder="Describe the role, responsibilities..."
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
+                  <textarea
+                    value={newJob.requirements}
+                    onChange={(e) => setNewJob({...newJob, requirements: e.target.value})}
+                    className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    placeholder="List qualifications, skills required..."
+                  />
+                </div>
+                <div className="md:col-span-2 flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={newJob.isActive}
+                    onChange={(e) => setNewJob({...newJob, isActive: e.target.checked})}
+                    className="w-4 h-4 text-orange-600 rounded focus:ring-2 focus:ring-orange-500"
+                  />
+                  <label className="ml-2 text-sm text-gray-700">Active (visible to applicants)</label>
                 </div>
               </div>
               <button
-                onClick={handleAddAdmin}
-                className="w-full bg-gradient-to-r from-yellow-500 to-red-500 text-white py-3 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-all font-medium shadow-md"
+                onClick={handleAddJob}
+                className="w-full mt-4 bg-gradient-to-r from-yellow-500 to-red-500 text-white py-3 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-all font-medium shadow-md"
               >
-                <UserPlus className="w-5 h-5 inline mr-2" />
-                Add Admin
+                <Plus className="w-5 h-5 inline mr-2" />
+                Post Job
               </button>
             </div>
           )}
 
+          {editingJob && (
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">Edit Job</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Title *</label>
+                  <input
+                    type="text"
+                    value={editingJob.title}
+                    onChange={(e) => setEditingJob({...editingJob, title: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Department *</label>
+                  <input
+                    type="text"
+                    value={editingJob.department}
+                    onChange={(e) => setEditingJob({...editingJob, department: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location *</label>
+                  <input
+                    type="text"
+                    value={editingJob.location}
+                    onChange={(e) => setEditingJob({...editingJob, location: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Salary Range</label>
+                  <input
+                    type="text"
+                    value={editingJob.salary}
+                    onChange={(e) => setEditingJob({...editingJob, salary: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Description *</label>
+                  <textarea
+                    value={editingJob.description}
+                    onChange={(e) => setEditingJob({...editingJob, description: e.target.value})}
+                    className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
+                  <textarea
+                    value={editingJob.requirements}
+                    onChange={(e) => setEditingJob({...editingJob, requirements: e.target.value})}
+                    className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+                <div className="md:col-span-2 flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={editingJob.isActive}
+                    onChange={(e) => setEditingJob({...editingJob, isActive: e.target.checked})}
+                    className="w-4 h-4 text-orange-600 rounded focus:ring-2 focus:ring-orange-500"
+                  />
+                  <label className="ml-2 text-sm text-gray-700">Active (visible to applicants)</label>
+                </div>
+              </div>
+              <div className="flex gap-4 mt-4">
+                <button
+                  onClick={handleUpdateJob}
+                  className="flex-1 bg-gradient-to-r from-yellow-500 to-red-500 text-white py-3 rounded-lg hover:from-yellow-600 hover:to-red-600 transition-all font-medium shadow-md"
+                >
+                  Update Job
+                </button>
+                <button
+                  onClick={() => setEditingJob(null)}
+                  className="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition-all font-medium shadow-md"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">Current Admins</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-6">Current Job Openings</h2>
             <div className="space-y-4">
-              {admins.map((admin) => (
-                <div key={admin.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800">{admin.name}</h3>
-                    <p className="text-sm text-gray-600">{admin.email}</p>
-                    <span className={`inline-block mt-1 px-3 py-1 text-xs rounded-full ${
-                      admin.role === 'super_admin' ? 'bg-red-100 text-red-800' :
-                      admin.role === 'admin' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {admin.role === 'super_admin' ? 'Super Admin' : 
-                       admin.role === 'admin' ? 'Admin' : 'Viewer'}
-                    </span>
+              {jobs.map((job) => (
+                <div key={job.id} className="p-4 border border-gray-200 rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800 text-lg">{job.title}</h3>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                        <span className="flex items-center gap-1">
+                          <Building className="w-4 h-4" />
+                          {job.department}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4" />
+                          {job.location}
+                        </span>
+                      </div>
+                      <span className={`inline-block mt-2 px-3 py-1 text-xs rounded-full ${
+                        job.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {job.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    {userRole === 'super_admin' && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setEditingJob(job)}
+                          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteJob(job.id, job.title)}
+                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  {userRole === 'super_admin' && admin.email !== user.email && (
-                    <button
-                      onClick={() => handleDeleteAdmin(admin.id, admin.email)}
-                      className="text-red-600 hover:text-red-800 p-2"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  )}
                 </div>
               ))}
             </div>
+            {jobs.length === 0 && (
+              <p className="text-center text-gray-500 py-8">No jobs posted yet</p>
+            )}
           </div>
         </div>
       </div>
@@ -1487,12 +2088,13 @@ function HiringPortal() {
               <h1 className="text-2xl font-bold text-gray-800">Avanti Fellows</h1>
               <p className="text-sm text-gray-600">
                 Hiring Dashboard - {userRole === 'super_admin' ? 'Super Admin' : 
-                                   userRole === 'admin' ? 'Admin' : 'Viewer'}
+                                   userRole === 'admin' ? 'Admin' : 
+                                   userRole === 'program_manager' ? 'Program Manager' : 'Guest'}
               </p>
             </div>
             <div className="flex gap-4">
               <button
-                onClick={() => setCurrentView('home')}
+                onClick={() => setCurrentView('job-listings')}
                 className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <Home className="w-5 h-5" />
@@ -1500,11 +2102,11 @@ function HiringPortal() {
               </button>
               {userRole === 'super_admin' && (
                 <button
-                  onClick={() => setCurrentView('manage-admins')}
+                  onClick={() => setCurrentView('manage-jobs')}
                   className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <UserPlus className="w-5 h-5" />
-                  Manage Admins
+                  <Briefcase className="w-5 h-5" />
+                  Manage Jobs
                 </button>
               )}
               <button
@@ -1527,7 +2129,7 @@ function HiringPortal() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
           <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
             <div className="flex items-center gap-3">
               <Users className="w-8 h-8 text-orange-600" />
@@ -1590,6 +2192,16 @@ function HiringPortal() {
 
           <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
             <div className="flex items-center gap-3">
+              <UserCheck className="w-8 h-8 text-blue-600" />
+              <div>
+                <p className="text-xs text-gray-600">Hired</p>
+                <p className="text-2xl font-bold text-gray-800">{stats.hired}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center gap-3">
               <Clock className="w-8 h-8 text-orange-600" />
               <div>
                 <p className="text-xs text-gray-600">Not Contacted</p>
@@ -1600,19 +2212,38 @@ function HiringPortal() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="flex items-center gap-4">
-            <Filter className="w-5 h-5 text-gray-600" />
-            <select
-              value={selectedProfile}
-              onChange={(e) => setSelectedProfile(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-            >
-              <option value="All">All Profiles</option>
-              <option value="Teacher">Teacher</option>
-              <option value="Program Manager">Program Manager</option>
-              <option value="Coordinator">Coordinator</option>
-              <option value="Other">Other</option>
-            </select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center gap-4">
+              <Filter className="w-5 h-5 text-gray-600" />
+              <select
+                value={selectedProfile}
+                onChange={(e) => setSelectedProfile(e.target.value)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+              >
+                <option value="All">All Profiles</option>
+                <option value="Teacher">Teacher</option>
+                <option value="Program Manager">Program Manager</option>
+                <option value="Coordinator">Coordinator</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-4">
+              <Filter className="w-5 h-5 text-gray-600" />
+              <select
+                value={selectedStatusFilter}
+                onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+              >
+                <option value="All">All Status</option>
+                <option value="Not Contacted">Not Contacted</option>
+                <option value="Contacted">Contacted</option>
+                <option value="Screening">Screening</option>
+                <option value="Fits">Fits</option>
+                <option value="Shortlisted">Shortlisted</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Hired">Hired</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -1630,11 +2261,26 @@ function HiringPortal() {
                   <p className="text-sm text-gray-600">{candidate.profile}</p>
                   <p className="text-xs text-gray-500">{candidate.experience} years exp</p>
                 </div>
+                {userRole === 'super_admin' && (
+                  <button
+                    onClick={() => deleteCandidate(candidate.id, candidate.name)}
+                    className="text-red-600 hover:text-red-800"
+                    title="Delete candidate"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
               </div>
 
               <div className="space-y-2 mb-4 text-sm text-gray-700">
                 <p><strong>Email:</strong> {candidate.email}</p>
                 <p><strong>Phone:</strong> {candidate.phone}</p>
+                {candidate.howHeard && (
+                  <p><strong>Source:</strong> {candidate.howHeard}</p>
+                )}
+                {candidate.referrerName && (
+                  <p><strong>Referred by:</strong> {candidate.referrerName}</p>
+                )}
                 {candidate.resumeURL && (
                   <a href={candidate.resumeURL} target="_blank" rel="noopener noreferrer" className="bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent hover:underline">
                     View Resume
@@ -1648,7 +2294,7 @@ function HiringPortal() {
                   <select
                     value={candidate.contacted || 'No'}
                     onChange={(e) => updateCandidate(candidate.id, 'contacted', e.target.value, candidate)}
-                    disabled={userRole === 'viewer'}
+                    disabled={userRole === 'guest'}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
                   >
                     <option value="No">No</option>
@@ -1661,7 +2307,7 @@ function HiringPortal() {
                   <select
                     value={candidate.screening || 'No'}
                     onChange={(e) => updateCandidate(candidate.id, 'screening', e.target.value, candidate)}
-                    disabled={userRole === 'viewer'}
+                    disabled={userRole === 'guest'}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
                   >
                     <option value="No">No</option>
@@ -1674,7 +2320,7 @@ function HiringPortal() {
                   <select
                     value={candidate.fits || 'No'}
                     onChange={(e) => updateCandidate(candidate.id, 'fits', e.target.value, candidate)}
-                    disabled={userRole === 'viewer'}
+                    disabled={userRole === 'guest'}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
                   >
                     <option value="No">No</option>
@@ -1687,12 +2333,13 @@ function HiringPortal() {
                   <select
                     value={candidate.status || 'Pending'}
                     onChange={(e) => updateCandidate(candidate.id, 'status', e.target.value, candidate)}
-                    disabled={userRole === 'viewer'}
+                    disabled={userRole === 'guest'}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
                   >
                     <option value="Pending">Pending</option>
                     <option value="Shortlisted">Shortlisted</option>
                     <option value="Rejected">Rejected</option>
+                    <option value="Hired">Hired</option>
                   </select>
                 </div>
               </div>
