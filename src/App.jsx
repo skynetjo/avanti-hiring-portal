@@ -886,10 +886,13 @@ function HiringPortal() {
   {/* Hero Section with Background Image */}
   <div className="relative h-96 mb-12 rounded-2xl overflow-hidden shadow-2xl">
     <img 
-      src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200" 
-      alt="Team collaboration" 
-      className="w-full h-full object-cover"
-    />
+  src={heroImageUrl} 
+  alt="Team collaboration" 
+  className="w-full h-full object-cover"
+  onError={(e) => {
+    e.target.src = 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200';
+  }}
+/>
     <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50 flex items-center">
       <div className="max-w-3xl mx-auto px-8 text-white">
         <h1 className="text-5xl font-bold mb-4">Be a part of building something bigger than you</h1>
@@ -2160,21 +2163,31 @@ function HiringPortal() {
                       </span>
                     </div>
                     {userRole === 'super_admin' && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setEditingJob(job)}
-                          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteJob(job.id, job.title)}
-                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
+  <div className="flex gap-2">
+    <button
+      onClick={() => setEditingJob(job)}
+      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+    >
+      Edit
+    </button>
+    <button
+      onClick={() => {
+        const { id, createdAt, updatedAt, ...jobData } = job;
+        setNewJob({...jobData, title: jobData.title + ' (Copy)'});
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }}
+      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+    >
+      Duplicate
+    </button>
+    <button
+      onClick={() => handleDeleteJob(job.id, job.title)}
+      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+    >
+      <Trash2 className="w-4 h-4" />
+    </button>
+  </div>
+)}
                   </div>
                 </div>
               ))}
