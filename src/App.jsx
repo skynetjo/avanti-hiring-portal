@@ -770,24 +770,45 @@ function HiringPortal() {
   }
 
   if (!newJob.title || !newJob.department || !newJob.location || !newJob.deadline) {
-  alert('Please fill all required fields: Title, Department, Location, and Deadline');
-  return;
-}
+    alert('Please fill all required fields: Title, Department, Location, and Deadline');
+    return;
+  }
 
     try {
-      await addDoc(collection(db, 'jobs'), {
-        ...newJob,
+      // Create job object with all fields
+      const jobData = {
+        title: newJob.title || '',
+        department: newJob.department || '',
+        location: newJob.location || '',
+        aboutAvanti: newJob.aboutAvanti || '',
+        solvingFor: newJob.solvingFor || '',
+        principles: newJob.principles || '',
+        responsibilities: newJob.responsibilities || '',
+        lookingFor: newJob.lookingFor || '',
+        whatWeOffer: newJob.whatWeOffer || '',
+        deadline: newJob.deadline || '',
+        salary: newJob.salary || '',
+        heroImage: newJob.heroImage || '',
+        isActive: newJob.isActive !== false, // Default to true if not specified
         createdAt: new Date().toISOString()
-      });
+      };
+
+      await addDoc(collection(db, 'jobs'), jobData);
 
       alert('Job posted successfully!');
       setNewJob({
         title: '',
         department: '',
         location: '',
-        description: '',
-        requirements: '',
+        aboutAvanti: '',
+        solvingFor: '',
+        principles: '',
+        responsibilities: '',
+        lookingFor: '',
+        whatWeOffer: '',
+        deadline: '',
         salary: '',
+        heroImage: '',
         isActive: true
       });
       loadJobs();
