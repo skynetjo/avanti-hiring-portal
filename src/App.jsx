@@ -72,7 +72,7 @@ function HiringPortal() {
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [jobFilters, setJobFilters] = useState({ department: 'All', location: 'All' });
-  
+
   const [formData, setFormData] = useState({
     resume: null,
     name: '',
@@ -245,11 +245,11 @@ function HiringPortal() {
 
   const applyFilters = () => {
     let filtered = [...candidates];
-    
+
     if (selectedProfile !== 'All') {
       filtered = filtered.filter(c => c.profile === selectedProfile);
     }
-    
+
     if (selectedStatusFilter !== 'All') {
       if (selectedStatusFilter === 'Not Contacted') {
         filtered = filtered.filter(c => c.contacted === 'No');
@@ -267,7 +267,7 @@ function HiringPortal() {
         filtered = filtered.filter(c => c.status === 'Hired');
       }
     }
-    
+
     setFilteredCandidates(filtered);
   };
 
@@ -308,14 +308,14 @@ function HiringPortal() {
     try {
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      
+
       const candidatesSnapshot = await getDocs(collection(db, 'candidates'));
       const recentApplication = candidatesSnapshot.docs.find(doc => {
         const data = doc.data();
         const submittedDate = new Date(data.submittedAt);
         return (data.email === email || data.phone === phone) && submittedDate > sixMonthsAgo;
       });
-      
+
       return recentApplication !== undefined;
     } catch (error) {
       console.error('Error checking recent application:', error);
@@ -484,12 +484,12 @@ function HiringPortal() {
       alert('Please fill all required fields marked with *');
       return;
     }
-    
+
     if (formData.howHeard === 'Referral' && !formData.referrerName) {
       alert('Please provide the employee name who referred you');
       return;
     }
-    
+
     const hasValidEducation = formData.education.some(edu => 
       edu.qualification && edu.college && edu.year
     );
@@ -497,7 +497,7 @@ function HiringPortal() {
       alert('Please fill at least one complete education entry');
       return;
     }
-    
+
     if (!formData.privacyConsent) {
       alert('Please accept the privacy policy to continue');
       return;
@@ -569,7 +569,7 @@ function HiringPortal() {
       }, 'applicationReceived');
 
       alert('✅ Application submitted successfully! We will contact you soon. Please check your email for confirmation.');
-      
+
       // Reset form
       setFormData({
         resume: null,
@@ -632,7 +632,7 @@ function HiringPortal() {
       const confirmed = window.confirm(
         `An email will be sent to ${candidate.name} (${candidate.email}) informing them about being ${value.toLowerCase()}. Do you want to continue?`
       );
-      
+
       if (!confirmed) {
         return;
       }
@@ -641,7 +641,7 @@ function HiringPortal() {
     try {
       const candidateRef = doc(db, 'candidates', candidateId);
       await updateDoc(candidateRef, { [field]: value });
-      
+
       if (field === 'status' && (value === 'Rejected' || value === 'Shortlisted')) {
         const emailSent = await sendEmail(candidate, value.toLowerCase());
         if (emailSent) {
@@ -650,7 +650,7 @@ function HiringPortal() {
           alert('Failed to send email, but status was updated');
         }
       }
-      
+
       loadCandidates();
     } catch (error) {
       console.error('Error updating candidate:', error);
@@ -685,7 +685,7 @@ function HiringPortal() {
     try {
       const settingsQuery = query(collection(db, 'settings'));
       const settingsSnapshot = await getDocs(settingsQuery);
-      
+
       if (settingsSnapshot.empty) {
         await addDoc(collection(db, 'settings'), {
           emailTemplates,
@@ -698,7 +698,7 @@ function HiringPortal() {
           updatedAt: new Date().toISOString()
         });
       }
-      
+
       alert('Email templates saved successfully!');
       setCurrentView('admin-dashboard');
     } catch (error) {
@@ -720,7 +720,7 @@ function HiringPortal() {
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, newTeamMember.email, newTeamMember.password);
-      
+
       await addDoc(collection(db, 'teamMembers'), {
         uid: userCredential.user.uid,
         email: newTeamMember.email,
@@ -732,7 +732,7 @@ function HiringPortal() {
       alert('Team member added successfully!');
       setNewTeamMember({ email: '', password: '', role: 'guest', name: '' });
       loadTeamMembers();
-      
+
       await signInWithEmailAndPassword(auth, user.email, loginPassword);
     } catch (error) {
       console.error('Error adding team member:', error);
@@ -886,13 +886,13 @@ function HiringPortal() {
   {/* Hero Section with Background Image */}
   <div className="relative h-96 mb-12 rounded-2xl overflow-hidden shadow-2xl">
     <img 
-  src={heroImageUrl} 
-  alt="Team collaboration" 
-  className="w-full h-full object-cover"
-  onError={(e) => {
-    e.target.src = 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200';
-  }}
-/>
+      src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200" 
+      alt="Team collaboration" 
+      className="w-full h-full object-cover"
+    />
+
+
+
     <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50 flex items-center">
       <div className="max-w-3xl mx-auto px-8 text-white">
         <h1 className="text-5xl font-bold mb-4">Be a part of building something bigger than you</h1>
@@ -1808,7 +1808,7 @@ function HiringPortal() {
             {/* Team Members */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-xl font-bold text-gray-800 mb-4">Team Members</h2>
-              
+
               {userRole === 'super_admin' && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                   <h3 className="font-semibold text-gray-800 mb-3">Add New Team Member</h3>
@@ -2188,6 +2188,16 @@ function HiringPortal() {
     </button>
   </div>
 )}
+
+
+
+
+
+
+
+
+
+
                   </div>
                 </div>
               ))}
