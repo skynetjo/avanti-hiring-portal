@@ -890,7 +890,6 @@ function HiringPortal() {
       alt="Team collaboration" 
       className="w-full h-full object-cover"
     />
-    <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50 flex items-center">
 
 
 
