@@ -126,14 +126,20 @@ function HiringPortal() {
     name: ''
   });
   const [newJob, setNewJob] = useState({
-    title: '',
-    department: '',
-    location: '',
-    description: '',
-    requirements: '',
-    salary: '',
-    isActive: true
-  });
+  title: '',
+  department: '',
+  location: '',
+  aboutAvanti: '',
+  solvingFor: '',
+  principles: '',
+  responsibilities: '',
+  lookingFor: '',
+  whatWeOffer: '',
+  deadline: '',
+  salary: '',
+  isActive: true,
+  heroImage: ''
+});
   const [editingJob, setEditingJob] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
@@ -801,15 +807,9 @@ function HiringPortal() {
     try {
       const jobRef = doc(db, 'jobs', editingJob.id);
       await updateDoc(jobRef, {
-        title: editingJob.title,
-        department: editingJob.department,
-        location: editingJob.location,
-        description: editingJob.description,
-        requirements: editingJob.requirements,
-        salary: editingJob.salary,
-        isActive: editingJob.isActive,
-        updatedAt: new Date().toISOString()
-      });
+  ...editingJob,
+  updatedAt: new Date().toISOString()
+});
 
       alert('Job updated successfully!');
       setEditingJob(null);
@@ -882,11 +882,29 @@ function HiringPortal() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Join Our Team</h2>
-            <p className="text-gray-600">Explore current opportunities at Avanti Fellows</p>
-          </div>
+        <div className="max-w-7xl mx-auto px-6 py-8">
+  {/* Hero Section with Background Image */}
+  <div className="relative h-96 mb-12 rounded-2xl overflow-hidden shadow-2xl">
+    <img 
+      src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200" 
+      alt="Team collaboration" 
+      className="w-full h-full object-cover"
+    />
+    <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50 flex items-center">
+      <div className="max-w-3xl mx-auto px-8 text-white">
+        <h1 className="text-5xl font-bold mb-4">Be a part of building something bigger than you</h1>
+        <p className="text-xl mb-6">Join us in transforming education across India</p>
+        <a href="#open-positions" className="inline-block bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+          Browse all jobs
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {/* Open Positions Section */}
+  <div id="open-positions" className="mb-8">
+    <h2 className="text-4xl font-bold text-gray-800 mb-8 text-center">Open Positions</h2>
+  </div>
 
           <div className="bg-white rounded-xl shadow-md p-6 mb-8">
             <div className="flex flex-col md:flex-row gap-4">
@@ -994,18 +1012,54 @@ function HiringPortal() {
             </div>
 
             <div className="space-y-6 mb-8">
-              <div>
-                <h2 className="text-xl font-bold text-gray-800 mb-3">Job Description</h2>
-                <p className="text-gray-700 whitespace-pre-line">{selectedJob.description}</p>
-              </div>
+  {selectedJob.aboutAvanti && (
+    <div>
+      <h2 className="text-xl font-bold text-gray-800 mb-3">About Avanti Fellows</h2>
+      <p className="text-gray-700 whitespace-pre-line">{selectedJob.aboutAvanti}</p>
+    </div>
+  )}
 
-              {selectedJob.requirements && (
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800 mb-3">Requirements</h2>
-                  <p className="text-gray-700 whitespace-pre-line">{selectedJob.requirements}</p>
-                </div>
-              )}
-            </div>
+  {selectedJob.solvingFor && (
+    <div>
+      <h2 className="text-xl font-bold text-gray-800 mb-3">What are we solving for?</h2>
+      <p className="text-gray-700 whitespace-pre-line">{selectedJob.solvingFor}</p>
+    </div>
+  )}
+
+  {selectedJob.principles && (
+    <div>
+      <h2 className="text-xl font-bold text-gray-800 mb-3">What are some of the principles/approaches we use?</h2>
+      <p className="text-gray-700 whitespace-pre-line">{selectedJob.principles}</p>
+    </div>
+  )}
+
+  {selectedJob.responsibilities && (
+    <div>
+      <h2 className="text-xl font-bold text-gray-800 mb-3">What will you do?</h2>
+      <p className="text-gray-700 whitespace-pre-line">{selectedJob.responsibilities}</p>
+    </div>
+  )}
+
+  {selectedJob.lookingFor && (
+    <div>
+      <h2 className="text-xl font-bold text-gray-800 mb-3">Who are we looking for in this role?</h2>
+      <p className="text-gray-700 whitespace-pre-line">{selectedJob.lookingFor}</p>
+    </div>
+  )}
+
+  {selectedJob.whatWeOffer && (
+    <div>
+      <h2 className="text-xl font-bold text-gray-800 mb-3">What We Offer:</h2>
+      <p className="text-gray-700 whitespace-pre-line">{selectedJob.whatWeOffer}</p>
+    </div>
+  )}
+
+  {selectedJob.deadline && (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+      <p className="text-red-800 font-semibold">Application Deadline: {new Date(selectedJob.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+    </div>
+  )}
+</div>
 
             <button
               onClick={() => {
@@ -1864,64 +1918,120 @@ function HiringPortal() {
             <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
               <h2 className="text-xl font-bold text-gray-800 mb-6">Add New Job</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Title *</label>
-                  <input
-                    type="text"
-                    value={newJob.title}
-                    onChange={(e) => setNewJob({...newJob, title: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    placeholder="e.g., Physics Teacher"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Department *</label>
-                  <input
-                    type="text"
-                    value={newJob.department}
-                    onChange={(e) => setNewJob({...newJob, department: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    placeholder="e.g., Teaching"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Location *</label>
-                  <input
-                    type="text"
-                    value={newJob.location}
-                    onChange={(e) => setNewJob({...newJob, location: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    placeholder="e.g., Bangalore, Karnataka"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Salary Range</label>
-                  <input
-                    type="text"
-                    value={newJob.salary}
-                    onChange={(e) => setNewJob({...newJob, salary: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    placeholder="e.g., ₹3-5 LPA"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Description *</label>
-                  <textarea
-                    value={newJob.description}
-                    onChange={(e) => setNewJob({...newJob, description: e.target.value})}
-                    className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    placeholder="Describe the role, responsibilities..."
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
-                  <textarea
-                    value={newJob.requirements}
-                    onChange={(e) => setNewJob({...newJob, requirements: e.target.value})}
-                    className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    placeholder="List qualifications, skills required..."
-                  />
-                </div>
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">Job Title *</label>
+    <input
+      type="text"
+      value={newJob.title}
+      onChange={(e) => setNewJob({...newJob, title: e.target.value})}
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="e.g., Physics Teacher"
+    />
+  </div>
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">Department *</label>
+    <input
+      type="text"
+      value={newJob.department}
+      onChange={(e) => setNewJob({...newJob, department: e.target.value})}
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="e.g., Teaching"
+    />
+  </div>
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">Location *</label>
+    <input
+      type="text"
+      value={newJob.location}
+      onChange={(e) => setNewJob({...newJob, location: e.target.value})}
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="e.g., Bangalore, Karnataka"
+    />
+  </div>
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">Salary Range</label>
+    <input
+      type="text"
+      value={newJob.salary}
+      onChange={(e) => setNewJob({...newJob, salary: e.target.value})}
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="e.g., ₹3-5 LPA"
+    />
+  </div>
+  <div className="md:col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">Application Deadline *</label>
+    <input
+      type="date"
+      value={newJob.deadline}
+      onChange={(e) => setNewJob({...newJob, deadline: e.target.value})}
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+    />
+  </div>
+  <div className="md:col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">Hero Image URL (Optional)</label>
+    <input
+      type="url"
+      value={newJob.heroImage}
+      onChange={(e) => setNewJob({...newJob, heroImage: e.target.value})}
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="https://example.com/image.jpg"
+    />
+    <p className="text-xs text-gray-500 mt-1">Upload image to a service like imgur.com or use unsplash.com URLs</p>
+  </div>
+  <div className="md:col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">About Avanti Fellows</label>
+    <textarea
+      value={newJob.aboutAvanti}
+      onChange={(e) => setNewJob({...newJob, aboutAvanti: e.target.value})}
+      className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="Describe Avanti Fellows..."
+    />
+  </div>
+  <div className="md:col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">What are we solving for?</label>
+    <textarea
+      value={newJob.solvingFor}
+      onChange={(e) => setNewJob({...newJob, solvingFor: e.target.value})}
+      className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="Describe the problem you're solving..."
+    />
+  </div>
+  <div className="md:col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">What are some principles/approaches we use?</label>
+    <textarea
+      value={newJob.principles}
+      onChange={(e) => setNewJob({...newJob, principles: e.target.value})}
+      className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="List principles and approaches..."
+    />
+  </div>
+  <div className="md:col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">What will you do? (Responsibilities)</label>
+    <textarea
+      value={newJob.responsibilities}
+      onChange={(e) => setNewJob({...newJob, responsibilities: e.target.value})}
+      className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="List key responsibilities..."
+    />
+  </div>
+  <div className="md:col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">Who are we looking for?</label>
+    <textarea
+      value={newJob.lookingFor}
+      onChange={(e) => setNewJob({...newJob, lookingFor: e.target.value})}
+      className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="List qualifications, skills, experience..."
+    />
+  </div>
+  <div className="md:col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">What We Offer</label>
+    <textarea
+      value={newJob.whatWeOffer}
+      onChange={(e) => setNewJob({...newJob, whatWeOffer: e.target.value})}
+      className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="List benefits, perks, culture..."
+    />
+  </div>
                 <div className="md:col-span-2 flex items-center">
                   <input
                     type="checkbox"
