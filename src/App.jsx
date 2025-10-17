@@ -72,12 +72,7 @@ function HiringPortal() {
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [jobFilters, setJobFilters] = useState({ department: 'All', location: 'All' });
-  const [heroSettings, setHeroSettings] = useState({
-  mediaType: 'image',
-  mediaUrl: 'https://unsplash.com/photos/RDMSeixOI8o',
-  title: 'Be a part of building something bigger than you',
-  subtitle: 'Join us in transforming education across India'
-});
+
   const [formData, setFormData] = useState({
     resume: null,
     name: '',
@@ -887,33 +882,14 @@ function HiringPortal() {
           </div>
         </div>
 
-        <div className="relative h-96 mb-12 rounded-2xl overflow-hidden shadow-2xl">
-  {heroSettings.mediaType === 'video' ? (
-    <video 
-      src={heroSettings.mediaUrl} 
-      autoPlay 
-      loop 
-      muted 
-      playsInline
-      className="w-full h-full object-cover"
-    />
-  ) : (
+        <div className="max-w-7xl mx-auto px-6 py-8">
+  {/* Hero Section with Background Image */}
+  <div className="relative h-96 mb-12 rounded-2xl overflow-hidden shadow-2xl">
     <img 
-      src={heroSettings.mediaUrl} 
-      alt="Hero" 
+      src="https://unsplash.com/photos/RDMSeixOI8o" 
+      alt="Team collaboration" 
       className="w-full h-full object-cover"
     />
-  )}
-  <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50 flex items-center">
-    <div className="max-w-3xl mx-auto px-8 text-white">
-      <h1 className="text-5xl font-bold mb-4">{heroSettings.title}</h1>
-      <p className="text-xl mb-6">{heroSettings.subtitle}</p>
-      <a href="#open-positions" className="inline-block bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-        Browse all jobs
-      </a>
-    </div>
-  </div>
-</div>
 
 
 
