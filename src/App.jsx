@@ -818,7 +818,6 @@ function HiringPortal() {
       alert('Failed to add job');
     }
   };
-
   const handleUpdateJob = async () => {
     if (userRole !== 'super_admin') {
       alert('Only Super Admins can edit jobs');
