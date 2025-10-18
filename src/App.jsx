@@ -70,8 +70,10 @@ function HiringPortal() {
   const [selectedProfile, setSelectedProfile] = useState('All');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('All');
   const [jobs, setJobs] = useState([]);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [jobFilters, setJobFilters] = useState({ department: 'All', location: 'All' });
+const [selectedJob, setSelectedJob] = useState(null);
+const [jobFilters, setJobFilters] = useState({ department: 'All', location: 'All' });
+
+console.log('🔄 Component render - jobs.length:', jobs.length);
 
   const [formData, setFormData] = useState({
     resume: null,
@@ -153,21 +155,25 @@ function HiringPortal() {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if (user) {
-        await loadUserRole(user.uid);
-        loadCandidates();
-        loadTeamMembers();
-        loadEmailTemplates();
-        loadJobs();
-      } else {
-        setUserRole(null);
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
+  console.log('🚀 App mounted, loading jobs for public view...');
+  // Load jobs immediately for everyone (public access)
+  loadJobs();
+  
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    console.log('👤 Auth state changed, user:', user?.email || 'No user');
+    setUser(user);
+    if (user) {
+      await loadUserRole(user.uid);
+      loadCandidates();
+      loadTeamMembers();
+      loadEmailTemplates();
+    } else {
+      setUserRole(null);
+    }
+    setLoading(false);
+  });
+  return () => unsubscribe();
+}, []);
 
   useEffect(() => {
     applyFilters();
@@ -217,17 +223,29 @@ function HiringPortal() {
   };
 
   const loadJobs = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, 'jobs'));
-      const jobsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setJobs(jobsData);
-    } catch (error) {
-      console.error('Error loading jobs:', error);
-    }
-  };
+  try {
+    console.log('🔄 Loading jobs from Firebase...');
+    const querySnapshot = await getDocs(collection(db, 'jobs'));
+    const jobsData = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    console.log('✅ Jobs loaded from Firebase:', jobsData);
+    console.log('📊 Number of jobs:', jobsData.length);
+    jobsData.forEach((job, index) => {
+      console.log(`Job ${index + 1}:`, {
+        id: job.id,
+        title: job.title,
+        department: job.department,
+        location: job.location,
+        isActive: job.isActive
+      });
+    });
+    setJobs(jobsData);
+  } catch (error) {
+    console.error('❌ Error loading jobs:', error);
+  }
+};
 
   const loadEmailTemplates = async () => {
     try {
@@ -774,77 +792,89 @@ function HiringPortal() {
     return;
   }
 
-    try {
-      // Create job object with all fields
-      const jobData = {
-        title: newJob.title || '',
-        department: newJob.department || '',
-        location: newJob.location || '',
-        aboutAvanti: newJob.aboutAvanti || '',
-        solvingFor: newJob.solvingFor || '',
-        principles: newJob.principles || '',
-        responsibilities: newJob.responsibilities || '',
-        lookingFor: newJob.lookingFor || '',
-        whatWeOffer: newJob.whatWeOffer || '',
-        deadline: newJob.deadline || '',
-        salary: newJob.salary || '',
-        heroImage: newJob.heroImage || '',
-        isActive: newJob.isActive !== false, // Default to true if not specified
-        createdAt: new Date().toISOString()
-      };
+  try {
+    // Create job object with all fields
+    const jobData = {
+      title: newJob.title || '',
+      department: newJob.department || '',
+      location: newJob.location || '',
+      aboutAvanti: newJob.aboutAvanti || '',
+      solvingFor: newJob.solvingFor || '',
+      principles: newJob.principles || '',
+      responsibilities: newJob.responsibilities || '',
+      lookingFor: newJob.lookingFor || '',
+      whatWeOffer: newJob.whatWeOffer || '',
+      deadline: newJob.deadline || '',
+      salary: newJob.salary || '',
+      heroImage: newJob.heroImage || '',
+      isActive: newJob.isActive !== false, // Default to true if not specified
+      createdAt: new Date().toISOString()
+    };
 
-      await addDoc(collection(db, 'jobs'), jobData);
+    await addDoc(collection(db, 'jobs'), jobData);
 
-      alert('Job posted successfully!');
-      setNewJob({
-        title: '',
-        department: '',
-        location: '',
-        aboutAvanti: '',
-        solvingFor: '',
-        principles: '',
-        responsibilities: '',
-        lookingFor: '',
-        whatWeOffer: '',
-        deadline: '',
-        salary: '',
-        heroImage: '',
-        isActive: true
-      });
-      loadJobs();
-      setCurrentView('admin-dashboard');
-    } catch (error) {
-      console.error('Error adding job:', error);
-      alert('Failed to add job');
-    }
-  };
-
-  const handleDeleteJob = async (jobId, jobTitle) => {
-    if (userRole !== 'super_admin') {
-      alert('Only Super Admins can delete jobs');
-      return;
-    }
-
-    if (confirm(`Are you sure you want to delete "${jobTitle}"?`)) {
-      try {
-        await deleteDoc(doc(db, 'jobs', jobId));
-        alert('Job deleted successfully!');
-        loadJobs();
-      } catch (error) {
-        console.error('Error deleting job:', error);
-        alert('Failed to delete job');
-      }
-    }
-  };
+    alert('Job posted successfully!');
+    setNewJob({
+      title: '',
+      department: '',
+      location: '',
+      aboutAvanti: '',
+      solvingFor: '',
+      principles: '',
+      responsibilities: '',
+      lookingFor: '',
+      whatWeOffer: '',
+      deadline: '',
+      salary: '',
+      heroImage: '',
+      isActive: true
+    });
+    loadJobs();
+    setCurrentView('admin-dashboard');
+  } catch (error) {
+    console.error('Error adding job:', error);
+    alert('Failed to add job');
+  }
+};
 
   const getFilteredJobs = () => {
-    return jobs.filter(job => {
-      if (!job.isActive) return false;
-      if (jobFilters.department !== 'All' && job.department !== jobFilters.department) return false;
-      if (jobFilters.location !== 'All' && job.location !== jobFilters.location) return false;
-      return true;
-    });
-  };
+  console.log('All jobs:', jobs);
+  console.log('Current filters:', jobFilters);
+  
+  const filtered = jobs.filter(job => {
+    console.log('Checking job:', job.title, 'isActive:', job.isActive, 'department:', job.department, 'location:', job.location);
+    
+    // Skip jobs without required fields
+    if (!job.title || !job.department || !job.location) {
+      console.log('Job filtered out: missing required fields (title, department, or location)');
+      return false;
+    }
+    
+    // Must be active (explicitly check for false, as undefined/null should be treated as inactive)
+    if (job.isActive === false) {
+      console.log('Job filtered out: not active');
+      return false;
+    }
+    
+    // Filter by department if not "All"
+    if (jobFilters.department !== 'All' && job.department !== jobFilters.department) {
+      console.log('Job filtered out: department mismatch');
+      return false;
+    }
+    
+    // Filter by location if not "All"
+    if (jobFilters.location !== 'All' && job.location !== jobFilters.location) {
+      console.log('Job filtered out: location mismatch');
+      return false;
+    }
+    
+    console.log('Job passed all filters!');
+    return true;
+  });
+  
+  console.log('Filtered jobs:', filtered);
+  return filtered;
+};
 
   if (loading) {
     return (
@@ -855,10 +885,17 @@ function HiringPortal() {
   }
 
   // JOB LISTINGS PAGE
-  if (currentView === 'job-listings') {
-    const departments = [...new Set(jobs.map(j => j.department))];
-    const locations = [...new Set(jobs.map(j => j.location))];
-    const filteredJobs = getFilteredJobs();
+if (currentView === 'job-listings') {
+  const departments = [...new Set(jobs.map(j => j.department))];
+  const locations = [...new Set(jobs.map(j => j.location))];
+  const filteredJobs = getFilteredJobs();
+
+  console.log('🏠 JOB LISTINGS VIEW');
+  console.log('📦 Total jobs in state:', jobs.length);
+  console.log('🔍 Filtered jobs count:', filteredJobs.length);
+  console.log('🏢 Available departments:', departments);
+  console.log('📍 Available locations:', locations);
+  console.log('⚙️ Current filters:', jobFilters);
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50">
@@ -952,7 +989,11 @@ function HiringPortal() {
                     <span>{job.location}</span>
                   </div>
                 </div>
-                <p className="text-gray-700 mb-4 line-clamp-3">{job.description}</p>
+                {(job.lookingFor || job.solvingFor) && (
+  <p className="text-gray-700 mb-4 line-clamp-3">
+    {job.lookingFor || job.solvingFor}
+  </p>
+)}
                 <button
                   onClick={() => {
                     setSelectedJob(job);
