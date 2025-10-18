@@ -818,28 +818,6 @@ function HiringPortal() {
       alert('Failed to add job');
     }
   };
-  const handleUpdateJob = async () => {
-    if (userRole !== 'super_admin') {
-      alert('Only Super Admins can edit jobs');
-      return;
-    }
-
-    try {
-      const jobRef = doc(db, 'jobs', editingJob.id);
-      await updateDoc(jobRef, {
-  ...editingJob,
-  updatedAt: new Date().toISOString()
-});
-
-      alert('Job updated successfully!');
-      setEditingJob(null);
-      loadJobs();
-      setCurrentView('admin-dashboard');
-    } catch (error) {
-      console.error('Error updating job:', error);
-      alert('Failed to update job');
-    }
-  };
 
   const handleDeleteJob = async (jobId, jobTitle) => {
     if (userRole !== 'super_admin') {
