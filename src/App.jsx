@@ -565,41 +565,48 @@ const calculateAge = (dob) => {
   }
 };
   const updateCandidate = async (candidateId, field, value, candidate) => {
-    if (userRole === 'guest') {
-      alert('You do not have permission to edit candidates');
+  if (userRole === 'guest') {
+    alert('You do not have permission to edit candidates');
+    return;
+  }
+
+  // Show confirmation for status changes that trigger emails
+  if (field === 'status' && (value === 'Rejected' || value === 'Shortlisted')) {
+    const confirmed = window.confirm(
+      `An email will be sent to ${candidate.name} (${candidate.email}) informing them about being ${value.toLowerCase()}. Do you want to continue?`
+    );
+
+    if (!confirmed) {
       return;
     }
+  }
 
-    // Show confirmation for status changes that trigger emails
+  try {
+    const candidateRef = doc(db, 'candidates', candidateId);
+    await updateDoc(candidateRef, { [field]: value });
+
+    // Send email only for status changes (Rejected or Shortlisted)
     if (field === 'status' && (value === 'Rejected' || value === 'Shortlisted')) {
-      const confirmed = window.confirm(
-        `An email will be sent to ${candidate.name} (${candidate.email}) informing them about being ${value.toLowerCase()}. Do you want to continue?`
-      );
-
-      if (!confirmed) {
-        return;
-      }
-    }
-
-    try {
-      const candidateRef = doc(db, 'candidates', candidateId);
-      await updateDoc(candidateRef, { [field]: value });
-
-      if (field === 'status' && (value === 'Rejected' || value === 'Shortlisted')) {
+      try {
         const emailSent = await sendEmail(candidate, value.toLowerCase());
         if (emailSent) {
-          alert(`Email sent successfully to ${candidate.name}`);
+          alert(`Status updated and email sent successfully to ${candidate.name}`);
         } else {
-          alert('Failed to send email, but status was updated');
+          alert(`Status updated, but failed to send email to ${candidate.name}. Please contact them manually.`);
         }
+      } catch (emailError) {
+        console.error('Email error:', emailError);
+        alert(`Status updated, but failed to send email to ${candidate.name}. Please contact them manually.`);
       }
-
-      loadCandidates();
-    } catch (error) {
-      console.error('Error updating candidate:', error);
-      alert('Failed to update candidate');
     }
-  };
+
+    // Reload candidates to refresh the UI
+    await loadCandidates();
+  } catch (error) {
+    console.error('Error updating candidate:', error);
+    alert('Failed to update candidate. Error: ' + error.message);
+  }
+};
 
   const deleteCandidate = async (candidateId, candidateName) => {
     if (userRole !== 'super_admin') {
