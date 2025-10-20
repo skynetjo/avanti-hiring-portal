@@ -248,18 +248,84 @@ console.log('🔄 Component render - jobs.length:', jobs.length);
 };
 
   const loadEmailTemplates = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, 'settings'));
-      if (!querySnapshot.empty) {
-        const settingsDoc = querySnapshot.docs[0];
-        if (settingsDoc.data().emailTemplates) {
-          setEmailTemplates(settingsDoc.data().emailTemplates);
-        }
+  try {
+    const querySnapshot = await getDocs(collection(db, 'settings'));
+    if (!querySnapshot.empty) {
+      const settingsDoc = querySnapshot.docs[0];
+      if (settingsDoc.data().emailTemplates) {
+        setEmailTemplates(settingsDoc.data().emailTemplates);
       }
-    } catch (error) {
-      console.error('Error loading email templates:', error);
     }
-  };
+  } catch (error) {
+    console.error('Error loading email templates:', error);
+  }
+};
+
+// ADD THIS COMPLETE FUNCTION HERE ⬇️⬇️⬇️
+const sendEmail = async (candidate, type) => {
+  try {
+    const template = emailTemplates[type];
+    if (!template) {
+      console.error(`No email template found for type: ${type}`);
+      return false;
+    }
+
+    const emailBody = template
+      .replace(/{name}/g, candidate.name)
+      .replace(/{position}/g, candidate.profile);
+
+    // Map type to correct EmailJS template IDs
+    const templateIds = {
+      rejected: 'template_rejected',
+      shortlisted: 'template_shortlisted',
+      applicationReceived: 'template_received'
+    };
+
+    const templateId = templateIds[type];
+    if (!templateId) {
+      console.error(`No template ID mapping for type: ${type}`);
+      return false;
+    }
+
+    console.log(`Attempting to send email to ${candidate.email} with template ${templateId}`);
+
+    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        service_id: EMAILJS_SERVICE_ID,
+        template_id: templateId,
+        user_id: EMAILJS_PUBLIC_KEY,
+        template_params: {
+          to_email: candidate.email,
+          to_name: candidate.name,
+          from_name: 'Avanti Fellows',
+          message: emailBody,
+          position: candidate.profile
+        }
+      })
+    });
+
+    if (response.ok) {
+      console.log('✅ Email sent successfully to:', candidate.email);
+      return true;
+    } else {
+      const errorText = await response.text();
+      console.error('❌ Email send failed:', response.status, errorText);
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Error sending email:', error);
+    return false;
+  }
+};
+// END OF NEW FUNCTION ⬆️⬆️⬆️
+
+const applyFilters = () => {
+  let filtered = [...candidates];
+  // ... rest of the function
 
   const applyFilters = () => {
     let filtered = [...candidates];
@@ -582,49 +648,40 @@ const calculateAge = (dob) => {
   }
 
   try {
+    // First update the database
     const candidateRef = doc(db, 'candidates', candidateId);
     await updateDoc(candidateRef, { [field]: value });
+    console.log(`✅ Database updated: ${field} = ${value}`);
 
-    // Send email only for status changes (Rejected or Shortlisted)
+    // Then send email for status changes
     if (field === 'status' && (value === 'Rejected' || value === 'Shortlisted')) {
+      console.log(`Attempting to send ${value.toLowerCase()} email...`);
+      
       try {
         const emailSent = await sendEmail(candidate, value.toLowerCase());
+        
         if (emailSent) {
-          alert(`Status updated and email sent successfully to ${candidate.name}`);
+          alert(`✅ Status updated to ${value} and email sent successfully to ${candidate.name}`);
         } else {
-          alert(`Status updated, but failed to send email to ${candidate.name}. Please contact them manually.`);
+          alert(`⚠️ Status updated to ${value}, but failed to send email to ${candidate.name}. Please contact them manually at ${candidate.email}`);
         }
       } catch (emailError) {
-        console.error('Email error:', emailError);
-        alert(`Status updated, but failed to send email to ${candidate.name}. Please contact them manually.`);
+        console.error('❌ Email sending error:', emailError);
+        alert(`⚠️ Status updated to ${value}, but failed to send email to ${candidate.name}. Please contact them manually at ${candidate.email}`);
       }
+    } else {
+      // For non-status changes or other status values
+      alert(`✅ Candidate updated successfully`);
     }
 
     // Reload candidates to refresh the UI
     await loadCandidates();
+    
   } catch (error) {
-    console.error('Error updating candidate:', error);
+    console.error('❌ Error updating candidate:', error);
     alert('Failed to update candidate. Error: ' + error.message);
   }
 };
-
-  const deleteCandidate = async (candidateId, candidateName) => {
-    if (userRole !== 'super_admin') {
-      alert('Only Super Admins can delete candidate profiles');
-      return;
-    }
-
-    if (confirm(`Are you sure you want to delete ${candidateName}'s profile? This action cannot be undone.`)) {
-      try {
-        await deleteDoc(doc(db, 'candidates', candidateId));
-        alert('Candidate profile deleted successfully');
-        loadCandidates();
-      } catch (error) {
-        console.error('Error deleting candidate:', error);
-        alert('Failed to delete candidate profile');
-      }
-    }
-  };
 
   const saveEmailTemplates = async () => {
     if (userRole !== 'super_admin') {
