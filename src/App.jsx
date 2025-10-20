@@ -323,24 +323,50 @@ console.log('🔄 Component render - jobs.length:', jobs.length);
   };
 
   const checkRecentApplication = async (email, phone) => {
-    try {
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  try {
+    const candidatesSnapshot = await getDocs(collection(db, 'candidates'));
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-      const candidatesSnapshot = await getDocs(collection(db, 'candidates'));
-      const recentApplication = candidatesSnapshot.docs.find(doc => {
-        const data = doc.data();
-        const submittedDate = new Date(data.submittedAt);
-        return (data.email === email || data.phone === phone) && submittedDate > sixMonthsAgo;
-      });
-
-      return recentApplication !== undefined;
-    } catch (error) {
-      console.error('Error checking recent application:', error);
+    const recentApplication = candidatesSnapshot.docs.find(doc => {
+      const data = doc.data();
+      const submittedDate = data.submittedAt ? new Date(data.submittedAt) : null;
+      
+      // Check if email or phone matches AND application is within last 6 months
+      if ((data.email === email || data.phone === phone) && submittedDate) {
+        return submittedDate > sixMonthsAgo;
+      }
       return false;
-    }
-  };
+    });
 
+    if (recentApplication) {
+      const lastApplicationDate = new Date(recentApplication.data().submittedAt);
+      const monthsAgo = Math.floor((new Date() - lastApplicationDate) / (1000 * 60 * 60 * 24 * 30));
+      return {
+        hasRecent: true,
+        lastAppliedDate: lastApplicationDate.toLocaleDateString('en-IN'),
+        monthsAgo: monthsAgo
+      };
+    }
+
+    return { hasRecent: false };
+  } catch (error) {
+    console.error('Error checking recent application:', error);
+    return { hasRecent: false };
+  }
+};
+const calculateAge = (dob) => {
+  const today = new Date();
+  const birthDate = new Date(dob);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age;
+};
   const handleFormChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({ 
@@ -364,280 +390,238 @@ console.log('🔄 Component render - jobs.length:', jobs.length);
     }
   };
 
-  const handleAdditionalDocsChange = (e) => {
-    const files = Array.from(e.target.files);
-    const validFiles = files.filter(file => {
-      if (file.size > 5000000) {
-        alert(`${file.name} is too large. Max 5MB per file.`);
-        return false;
-      }
-      return true;
-    });
-    setFormData(prev => ({ ...prev, additionalDocs: [...prev.additionalDocs, ...validFiles] }));
-  };
+  const handleFormSubmit = async () => {
+  // Age validation - MUST BE FIRST
+  if (!formData.dob) {
+    alert('Please enter your date of birth');
+    return;
+  }
 
-  const removeAdditionalDoc = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      additionalDocs: prev.additionalDocs.filter((_, i) => i !== index)
-    }));
-  };
+  const age = calculateAge(formData.dob);
+  if (age < 18) {
+    alert(`Sorry, you are not eligible to apply. You must be at least 18 years old to apply for this position. Your current age is ${age} years.`);
+    return;
+  }
 
-  const addEducation = () => {
-    setFormData(prev => ({
-      ...prev,
-      education: [...prev.education, {
+  // Check for recent application - SECOND CHECK
+  const recentCheck = await checkRecentApplication(formData.email, formData.phone);
+  if (recentCheck.hasRecent) {
+    alert(`You have already applied on ${recentCheck.lastAppliedDate} (${recentCheck.monthsAgo} months ago). Please wait at least 6 months before applying again. You can reapply after ${new Date(new Date(recentCheck.lastAppliedDate).setMonth(new Date(recentCheck.lastAppliedDate).getMonth() + 6)).toLocaleDateString('en-IN')}.`);
+    return;
+  }
+
+  // Validation
+  if (!formData.resume) {
+    alert('Please upload your resume (PDF format)');
+    return;
+  }
+  if (!formData.name || !formData.email || !formData.phone || !formData.dob || 
+      !formData.gender || !formData.profile || !formData.experience || 
+      !formData.currentSalary || !formData.availableToJoin || !formData.homeState || 
+      !formData.homeDistrict || !formData.currentState || !formData.motivation || 
+      !formData.payCut || !formData.howHeard) {
+    alert('Please fill all required fields marked with *');
+    return;
+  }
+
+  if (formData.howHeard === 'Referral' && !formData.referrerName) {
+    alert('Please provide the employee name who referred you');
+    return;
+  }
+
+  const hasValidEducation = formData.education.some(edu => 
+    edu.qualification && edu.college && edu.year
+  );
+  if (!hasValidEducation) {
+    alert('Please fill at least one complete education entry');
+    return;
+  }
+
+  if (!formData.privacyConsent) {
+    alert('Please accept the privacy policy to continue');
+    return;
+  }
+
+  setSubmitting(true);
+
+  try {
+    let resumeURL = '';
+    let photoURL = '';
+    let additionalDocsURLs = [];
+
+    if (formData.resume) {
+      const resumeRef = ref(storage, `resumes/${Date.now()}_${formData.resume.name}`);
+      await uploadBytes(resumeRef, formData.resume);
+      resumeURL = await getDownloadURL(resumeRef);
+    }
+
+    if (formData.photo) {
+      const photoRef = ref(storage, `candidate-photos/${Date.now()}_${formData.photo.name}`);
+      await uploadBytes(photoRef, formData.photo);
+      photoURL = await getDownloadURL(photoRef);
+    }
+
+    for (const doc of formData.additionalDocs) {
+      const docRef = ref(storage, `additional-docs/${Date.now()}_${doc.name}`);
+      await uploadBytes(docRef, doc);
+      const docURL = await getDownloadURL(docRef);
+      additionalDocsURLs.push({ name: doc.name, url: docURL });
+    }
+
+    const candidateData = {
+      resumeURL,
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      dob: formData.dob,
+      age: age,
+      gender: formData.gender,
+      jobId: formData.jobId,
+      profile: formData.profile,
+      experience: formData.experience,
+      currentSalary: formData.currentSalary,
+      availableToJoin: formData.availableToJoin,
+      homeState: formData.homeState,
+      homeDistrict: formData.homeDistrict,
+      currentState: formData.currentState,
+      photo: photoURL,
+      additionalDocs: additionalDocsURLs,
+      education: formData.education,
+      workExperience: formData.workExperience,
+      motivation: formData.motivation,
+      payCut: formData.payCut,
+      howHeard: formData.howHeard,
+      referrerName: formData.referrerName || '',
+      contacted: 'No',
+      screening: 'No',
+      fits: 'No',
+      status: 'Pending',
+      submittedAt: new Date().toISOString()
+    };
+
+    await addDoc(collection(db, 'candidates'), candidateData);
+
+    // Send application received email
+    const emailSent = await sendEmail({
+      name: formData.name,
+      email: formData.email,
+      profile: formData.profile
+    }, 'applicationReceived');
+
+    if (emailSent) {
+      alert('✅ Application submitted successfully! We will contact you soon. Please check your email for confirmation.');
+    } else {
+      alert('✅ Application submitted successfully! However, we could not send a confirmation email. We will contact you soon via the email address you provided.');
+    }
+
+    // Reset form
+    setFormData({
+      resume: null,
+      name: '',
+      email: '',
+      phone: '',
+      dob: '',
+      gender: '',
+      jobId: '',
+      profile: '',
+      experience: '',
+      currentSalary: '',
+      availableToJoin: '',
+      homeState: '',
+      homeDistrict: '',
+      currentState: '',
+      photo: null,
+      additionalDocs: [],
+      education: [{
         qualification: '',
         otherQualification: '',
         college: '',
         otherCollege: '',
         year: ''
-      }]
-    }));
-  };
-
-  const removeEducation = (index) => {
-    if (formData.education.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        education: prev.education.filter((_, i) => i !== index)
-      }));
-    }
-  };
-
-  const updateEducation = (index, field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      education: prev.education.map((edu, i) => 
-        i === index ? { ...edu, [field]: value } : edu
-      )
-    }));
-  };
-
-  const addWorkExperience = () => {
-    setFormData(prev => ({
-      ...prev,
-      workExperience: [...prev.workExperience, {
+      }],
+      workExperience: [{
         organization: '',
         jobTitle: '',
         joiningDate: '',
         currentlyWorking: false,
         relievingDate: '',
         location: ''
-      }]
-    }));
-  };
+      }],
+      motivation: '',
+      payCut: '',
+      howHeard: '',
+      referrerName: '',
+      privacyConsent: false
+    });
 
-  const removeWorkExperience = (index) => {
-    if (formData.workExperience.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        workExperience: prev.workExperience.filter((_, i) => i !== index)
-      }));
-    }
-  };
+    document.querySelectorAll('input[type="file"]').forEach(input => input.value = '');
+    setCurrentView('job-listings');
 
-  const updateWorkExperience = (index, field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      workExperience: prev.workExperience.map((exp, i) => 
-        i === index ? { ...exp, [field]: value } : exp
-      )
-    }));
-  };
+  } catch (error) {
+    console.error('Error submitting application:', error);
+    alert('Failed to submit application. Please try again.');
+  } finally {
+    setSubmitting(false);
+  }
+};
+```
 
-  const sendEmail = async (candidate, type) => {
-    try {
-      const template = emailTemplates[type];
-      const emailBody = template
-        .replace(/{name}/g, candidate.name)
-        .replace(/{position}/g, candidate.profile);
+---
 
-      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          service_id: EMAILJS_SERVICE_ID,
-          template_id: `template_${type}`,
-          user_id: EMAILJS_PUBLIC_KEY,
-          template_params: {
-            to_email: candidate.email,
-            to_name: candidate.name,
-            message: emailBody,
-            position: candidate.profile
-          }
-        })
-      });
+## Setting Up EmailJS Properly
 
-      if (response.ok) {
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error sending email:', error);
-      return false;
-    }
-  };
+For emails to work, you need to set up EmailJS templates:
 
-  const handleFormSubmit = async () => {
-    // Check for recent application
-    const hasRecentApplication = await checkRecentApplication(formData.email, formData.phone);
-    if (hasRecentApplication) {
-      alert('You have already applied within the last 6 months. Please wait before applying again.');
-      return;
-    }
+### Step 1: Go to EmailJS Dashboard
+1. Visit [EmailJS Dashboard](https://dashboard.emailjs.com/)
+2. Login with your account
 
-    // Validation
-    if (!formData.resume) {
-      alert('Please upload your resume (PDF format)');
-      return;
-    }
-    if (!formData.name || !formData.email || !formData.phone || !formData.dob || 
-        !formData.gender || !formData.profile || !formData.experience || 
-        !formData.currentSalary || !formData.availableToJoin || !formData.homeState || 
-        !formData.homeDistrict || !formData.currentState || !formData.motivation || 
-        !formData.payCut || !formData.howHeard) {
-      alert('Please fill all required fields marked with *');
-      return;
-    }
+### Step 2: Create Email Templates
 
-    if (formData.howHeard === 'Referral' && !formData.referrerName) {
-      alert('Please provide the employee name who referred you');
-      return;
-    }
+Create 3 templates with these exact IDs:
 
-    const hasValidEducation = formData.education.some(edu => 
-      edu.qualification && edu.college && edu.year
-    );
-    if (!hasValidEducation) {
-      alert('Please fill at least one complete education entry');
-      return;
-    }
+**Template 1: `template_received` (Application Received)**
+```
+Subject: Application Received - {{position}} at Avanti Fellows
 
-    if (!formData.privacyConsent) {
-      alert('Please accept the privacy policy to continue');
-      return;
-    }
+Dear {{to_name}},
 
-    setSubmitting(true);
+Thank you for applying to the {{position}} position at Avanti Fellows.
 
-    try {
-      let resumeURL = '';
-      let photoURL = '';
-      let additionalDocsURLs = [];
+We have received your application and our team will review it shortly. We will get back to you soon.
 
-      if (formData.resume) {
-        const resumeRef = ref(storage, `resumes/${Date.now()}_${formData.resume.name}`);
-        await uploadBytes(resumeRef, formData.resume);
-        resumeURL = await getDownloadURL(resumeRef);
-      }
+Best regards,
+Avanti Fellows Team
+```
 
-      if (formData.photo) {
-        const photoRef = ref(storage, `candidate-photos/${Date.now()}_${formData.photo.name}`);
-        await uploadBytes(photoRef, formData.photo);
-        photoURL = await getDownloadURL(photoRef);
-      }
+**Template 2: `template_shortlisted` (Shortlisted)**
+```
+Subject: Congratulations! You've been shortlisted - {{position}}
 
-      for (const doc of formData.additionalDocs) {
-        const docRef = ref(storage, `additional-docs/${Date.now()}_${doc.name}`);
-        await uploadBytes(docRef, doc);
-        const docURL = await getDownloadURL(docRef);
-        additionalDocsURLs.push({ name: doc.name, url: docURL });
-      }
+Dear {{to_name}},
 
-      const candidateData = {
-        resumeURL,
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        dob: formData.dob,
-        gender: formData.gender,
-        jobId: formData.jobId,
-        profile: formData.profile,
-        experience: formData.experience,
-        currentSalary: formData.currentSalary,
-        availableToJoin: formData.availableToJoin,
-        homeState: formData.homeState,
-        homeDistrict: formData.homeDistrict,
-        currentState: formData.currentState,
-        photo: photoURL,
-        additionalDocs: additionalDocsURLs,
-        education: formData.education,
-        workExperience: formData.workExperience,
-        motivation: formData.motivation,
-        payCut: formData.payCut,
-        howHeard: formData.howHeard,
-        referrerName: formData.referrerName || '',
-        contacted: 'No',
-        screening: 'No',
-        fits: 'No',
-        status: 'Pending',
-        submittedAt: new Date().toISOString()
-      };
+Congratulations! You have been shortlisted for the {{position}} position at Avanti Fellows.
 
-      await addDoc(collection(db, 'candidates'), candidateData);
+We will contact you within 2-3 business days.
 
-      // Send application received email
-      await sendEmail({
-        name: formData.name,
-        email: formData.email,
-        profile: formData.profile
-      }, 'applicationReceived');
+Best regards,
+Avanti Fellows Team
+```
 
-      alert('✅ Application submitted successfully! We will contact you soon. Please check your email for confirmation.');
+**Template 3: `template_rejected` (Rejected)**
+```
+Subject: Application Update - {{position}} at Avanti Fellows
 
-      // Reset form
-      setFormData({
-        resume: null,
-        name: '',
-        email: '',
-        phone: '',
-        dob: '',
-        gender: '',
-        jobId: '',
-        profile: '',
-        experience: '',
-        currentSalary: '',
-        availableToJoin: '',
-        homeState: '',
-        homeDistrict: '',
-        currentState: '',
-        photo: null,
-        additionalDocs: [],
-        education: [{
-          qualification: '',
-          otherQualification: '',
-          college: '',
-          otherCollege: '',
-          year: ''
-        }],
-        workExperience: [{
-          organization: '',
-          jobTitle: '',
-          joiningDate: '',
-          currentlyWorking: false,
-          relievingDate: '',
-          location: ''
-        }],
-        motivation: '',
-        payCut: '',
-        howHeard: '',
-        referrerName: '',
-        privacyConsent: false
-      });
+Dear {{to_name}},
 
-      document.querySelectorAll('input[type="file"]').forEach(input => input.value = '');
-      setCurrentView('job-listings');
+Thank you for your interest in the {{position}} position at Avanti Fellows.
 
-    } catch (error) {
-      console.error('Error submitting application:', error);
-      alert('Failed to submit application. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
+After careful consideration, we regret to inform you that we will not be moving forward with your application at this time.
+
+We encourage you to apply for future opportunities.
+
+Best regards,
+Avanti Fellows Team
 
   const updateCandidate = async (candidateId, field, value, candidate) => {
     if (userRole === 'guest') {
