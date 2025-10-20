@@ -323,10 +323,6 @@ const sendEmail = async (candidate, type) => {
 };
 // END OF NEW FUNCTION ⬆️⬆️⬆️
 
-const applyFilters = () => {
-  let filtered = [...candidates];
-  // ... rest of the function
-
   const applyFilters = () => {
     let filtered = [...candidates];
 
