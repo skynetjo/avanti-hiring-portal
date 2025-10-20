@@ -564,65 +564,6 @@ const calculateAge = (dob) => {
     setSubmitting(false);
   }
 };
-```
-
----
-
-## Setting Up EmailJS Properly
-
-For emails to work, you need to set up EmailJS templates:
-
-### Step 1: Go to EmailJS Dashboard
-1. Visit [EmailJS Dashboard](https://dashboard.emailjs.com/)
-2. Login with your account
-
-### Step 2: Create Email Templates
-
-Create 3 templates with these exact IDs:
-
-**Template 1: `template_received` (Application Received)**
-```
-Subject: Application Received - {{position}} at Avanti Fellows
-
-Dear {{to_name}},
-
-Thank you for applying to the {{position}} position at Avanti Fellows.
-
-We have received your application and our team will review it shortly. We will get back to you soon.
-
-Best regards,
-Avanti Fellows Team
-```
-
-**Template 2: `template_shortlisted` (Shortlisted)**
-```
-Subject: Congratulations! You've been shortlisted - {{position}}
-
-Dear {{to_name}},
-
-Congratulations! You have been shortlisted for the {{position}} position at Avanti Fellows.
-
-We will contact you within 2-3 business days.
-
-Best regards,
-Avanti Fellows Team
-```
-
-**Template 3: `template_rejected` (Rejected)**
-```
-Subject: Application Update - {{position}} at Avanti Fellows
-
-Dear {{to_name}},
-
-Thank you for your interest in the {{position}} position at Avanti Fellows.
-
-After careful consideration, we regret to inform you that we will not be moving forward with your application at this time.
-
-We encourage you to apply for future opportunities.
-
-Best regards,
-Avanti Fellows Team
-
   const updateCandidate = async (candidateId, field, value, candidate) => {
     if (userRole === 'guest') {
       alert('You do not have permission to edit candidates');
