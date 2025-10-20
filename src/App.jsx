@@ -2510,7 +2510,6 @@ if (currentView === 'job-listings') {
             <p className="text-gray-600">No candidates found</p>
           </div>
         )}
-        </div>
       </div>
     </div>
   );
