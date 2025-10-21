@@ -270,10 +270,6 @@ const sendEmail = async (candidate, type) => {
       return false;
     }
 
-    const emailBody = template
-      .replace(/{name}/g, candidate.name)
-      .replace(/{position}/g, candidate.profile);
-
     // Map type to correct EmailJS template IDs
     const templateIds = {
       rejected: 'template_rejected',
@@ -301,9 +297,8 @@ const sendEmail = async (candidate, type) => {
         template_params: {
           to_email: candidate.email,
           to_name: candidate.name,
-          from_name: 'Avanti Fellows',
-          message: emailBody,
-          position: candidate.profile
+          position: candidate.profile,
+          from_name: 'Avanti Fellows'
         }
       })
     });
