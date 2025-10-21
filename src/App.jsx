@@ -73,6 +73,7 @@ function HiringPortal() {
   const [selectedDistrictFilter, setSelectedDistrictFilter] = useState('All');
   const [selectedExperienceFilter, setSelectedExperienceFilter] = useState('All');
   const [selectedJoiningDateFilter, setSelectedJoiningDateFilter] = useState('All');
+  const [expandedCandidate, setExpandedCandidate] = useState(null);
   const [jobs, setJobs] = useState([]);
 const [selectedJob, setSelectedJob] = useState(null);
 const [jobFilters, setJobFilters] = useState({ department: 'All', location: 'All' });
