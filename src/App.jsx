@@ -141,7 +141,7 @@ const [jobFilters, setJobFilters] = useState({ department: 'All', location: 'All
 
 console.log('🔄 Component render - jobs.length:', jobs.length);
 
-  cconst [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
   resume: null,
   name: '',
   email: '',
@@ -158,12 +158,25 @@ console.log('🔄 Component render - jobs.length:', jobs.length);
   currentState: '',
   photo: null,
   additionalDocs: [],
-  education: [{...}],
-  workExperience: [{...}],
+  education: [{
+    qualification: '',
+    otherQualification: '',
+    college: '',
+    otherCollege: '',
+    year: ''
+  }],
+  workExperience: [{
+    organization: '',
+    jobTitle: '',
+    joiningDate: '',
+    currentlyWorking: false,
+    relievingDate: '',
+    location: ''
+  }],
   motivation: '',
   payCut: '',
   howHeard: '',
-  howHeardOther: '',  // ADD THIS LINE
+  howHeardOther: '',
   referrerName: '',
   privacyConsent: false
 });
