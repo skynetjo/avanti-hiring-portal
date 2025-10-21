@@ -20,7 +20,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-const EMAILJS_SERVICE_ID = "service_fpfz7ze";
+const EMAILJS_SERVICE_ID = "service_hd66vgh";
 const EMAILJS_PUBLIC_KEY = "0ZZohllMdqRrY6rSB";
 
 const INDIAN_STATES = [
