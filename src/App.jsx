@@ -1556,7 +1556,7 @@ if (currentView === 'job-listings') {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Home District <span className="text-red-500">*</span>
+                      Home District (Optional)
                     </label>
                     <select
                       name="homeDistrict"
