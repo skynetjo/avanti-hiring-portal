@@ -1554,40 +1554,41 @@ if (currentView === 'job-listings') {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      How did you hear about this job? <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="howHeard"
-                      value={formData.howHeard}
-                      onChange={handleFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    >
-                      <option value="">Select Option</option>
-                      <option value="Social Media">Social Media</option>
-                      <option value="LinkedIn">LinkedIn</option>
-                      <option value="Referral">Referral</option>
-                      <option value="Google/Bing Search">Google/Bing Search</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    How did you hear about this job? <span className="text-red-500">*</span>
+  </label>
+  <select
+    name="howHeard"
+    value={formData.howHeard}
+    onChange={handleFormChange}
+    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+  >
+    <option value="">Select Option</option>
+    <option value="Social Media">Social Media</option>
+    <option value="LinkedIn">LinkedIn</option>
+    <option value="Referral">Referral</option>
+    <option value="Google/Bing Search">Google/Bing Search</option>
+    <option value="Other">Other</option>
+  </select>
+</div>
 
-                  {formData.howHeard === 'Referral' && (
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Employee Name (Referrer) <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="referrerName"
-                        value={formData.referrerName}
-                        onChange={handleFormChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                        placeholder="Enter the name of the employee who referred you"
-                      />
-                    </div>
-                  )}
-                  {formData.howHeard === 'Other' && (
+{formData.howHeard === 'Referral' && (
+  <div className="md:col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Employee Name (Referrer) <span className="text-red-500">*</span>
+    </label>
+    <input
+      type="text"
+      name="referrerName"
+      value={formData.referrerName}
+      onChange={handleFormChange}
+      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="Enter the name of the employee who referred you"
+    />
+  </div>
+)}
+
+{formData.howHeard === 'Other' && (
   <div className="md:col-span-2">
     <label className="block text-sm font-medium text-gray-700 mb-2">
       Please specify <span className="text-red-500">*</span>
