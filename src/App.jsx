@@ -141,44 +141,32 @@ const [jobFilters, setJobFilters] = useState({ department: 'All', location: 'All
 
 console.log('🔄 Component render - jobs.length:', jobs.length);
 
-  const [formData, setFormData] = useState({
-    resume: null,
-    name: '',
-    email: '',
-    phone: '',
-    dob: '',
-    gender: '',
-    jobId: '',
-    profile: '',
-    experience: '',
-    currentSalary: '',
-    availableToJoin: '',
-    homeState: '',
-    homeDistrict: '',
-    currentState: '',
-    photo: null,
-    additionalDocs: [],
-    education: [{
-      qualification: '',
-      otherQualification: '',
-      college: '',
-      otherCollege: '',
-      year: ''
-    }],
-    workExperience: [{
-      organization: '',
-      jobTitle: '',
-      joiningDate: '',
-      currentlyWorking: false,
-      relievingDate: '',
-      location: ''
-    }],
-    motivation: '',
-    payCut: '',
-    howHeard: '',
-    referrerName: '',
-    privacyConsent: false
-  });
+  cconst [formData, setFormData] = useState({
+  resume: null,
+  name: '',
+  email: '',
+  phone: '',
+  dob: '',
+  gender: '',
+  jobId: '',
+  profile: '',
+  experience: '',
+  currentSalary: '',
+  availableToJoin: '',
+  homeState: '',
+  homeDistrict: '',
+  currentState: '',
+  photo: null,
+  additionalDocs: [],
+  education: [{...}],
+  workExperience: [{...}],
+  motivation: '',
+  payCut: '',
+  howHeard: '',
+  howHeardOther: '',  // ADD THIS LINE
+  referrerName: '',
+  privacyConsent: false
+});
 
   const [submitting, setSubmitting] = useState(false);
   const [emailTemplates, setEmailTemplates] = useState({
@@ -741,9 +729,15 @@ const calculateAge = (dob) => {
   }
 
   if (formData.howHeard === 'Referral' && !formData.referrerName) {
-    alert('Please provide the employee name who referred you');
-    return;
-  }
+  alert('Please provide the employee name who referred you');
+  return;
+}
+
+// ADD THIS NEW VALIDATION
+if (formData.howHeard === 'Other' && !formData.howHeardOther) {
+  alert('Please specify how you heard about this job');
+  return;
+}
 
   const hasValidEducation = formData.education.some(edu => 
     edu.qualification && edu.college && edu.year
@@ -807,6 +801,7 @@ const calculateAge = (dob) => {
       motivation: formData.motivation,
       payCut: formData.payCut,
       howHeard: formData.howHeard,
+      howHeardOther: formData.howHeardOther || '',
       referrerName: formData.referrerName || '',
       contacted: 'No',
       screening: 'No',
@@ -866,6 +861,7 @@ const calculateAge = (dob) => {
       motivation: '',
       payCut: '',
       howHeard: '',
+      howHeardOther: '',
       referrerName: '',
       privacyConsent: false
     });
@@ -1591,6 +1587,21 @@ if (currentView === 'job-listings') {
                       />
                     </div>
                   )}
+                  {formData.howHeard === 'Other' && (
+  <div className="md:col-span-2">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Please specify <span className="text-red-500">*</span>
+    </label>
+    <input
+      type="text"
+      name="howHeardOther"
+      value={formData.howHeardOther || ''}
+      onChange={handleFormChange}
+      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      placeholder="Please tell us how you heard about this job"
+    />
+  </div>
+)}
                 </div>
               </div>
 
@@ -2636,6 +2647,7 @@ if (currentView === 'job-listings') {
         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
       >
         <div>
+  <div>
   <label className="block text-sm font-medium text-gray-700 mb-2">Profile/Position</label>
   <select
     value={selectedProfile}
@@ -2643,13 +2655,11 @@ if (currentView === 'job-listings') {
     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
   >
     <option value="All">All Profiles</option>
-    {[...new Set(jobs.map(job => job.title))].map(title => (
-      <option key={title} value={title}>{title}</option>
+    {[...new Set(candidates.map(c => c.profile).filter(Boolean))].map(profile => (
+      <option key={profile} value={profile}>{profile}</option>
     ))}
   </select>
 </div>
-      </select>
-    </div>
 
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
