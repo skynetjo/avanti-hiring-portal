@@ -69,6 +69,10 @@ function HiringPortal() {
   const [filteredCandidates, setFilteredCandidates] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState('All');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('All');
+  const [selectedStateFilter, setSelectedStateFilter] = useState('All');
+  const [selectedDistrictFilter, setSelectedDistrictFilter] = useState('All');
+  const [selectedExperienceFilter, setSelectedExperienceFilter] = useState('All');
+  const [selectedJoiningDateFilter, setSelectedJoiningDateFilter] = useState('All');
   const [jobs, setJobs] = useState([]);
 const [selectedJob, setSelectedJob] = useState(null);
 const [jobFilters, setJobFilters] = useState({ department: 'All', location: 'All' });
@@ -324,8 +328,18 @@ const deleteCandidate = async (candidateId, candidateName) => {
   }, [filteredCandidates]);
   
   useEffect(() => {
+  // Reset district filter when state changes
+  if (selectedStateFilter !== 'All') {
+    const availableDistricts = DISTRICTS[selectedStateFilter] || [];
+    if (selectedDistrictFilter !== 'All' && !availableDistricts.includes(selectedDistrictFilter)) {
+      setSelectedDistrictFilter('All');
+    }
+  }
+}, [selectedStateFilter]);
+  
+  useEffect(() => {
   applyFilters();
-}, [selectedProfile, selectedStatusFilter, selectedStateFilter, selectedDistrictFilter, candidates]);
+}, [selectedProfile, selectedStatusFilter, selectedStateFilter, selectedDistrictFilter, selectedExperienceFilter, selectedJoiningDateFilter, candidates]);
 
   const loadUserRole = async (uid) => {
     try {
@@ -499,9 +513,33 @@ const sendEmail = async (candidate, type) => {
     filtered = filtered.filter(c => c.homeDistrict === selectedDistrictFilter);
   }
 
+  // Experience filter
+  if (selectedExperienceFilter !== 'All') {
+    filtered = filtered.filter(c => {
+      const candidateExp = parseInt(c.experience);
+      if (selectedExperienceFilter === '0') return candidateExp === 0;
+      if (selectedExperienceFilter === '1-2') return candidateExp >= 1 && candidateExp <= 2;
+      if (selectedExperienceFilter === '3-5') return candidateExp >= 3 && candidateExp <= 5;
+      if (selectedExperienceFilter === '6-10') return candidateExp >= 6 && candidateExp <= 10;
+      if (selectedExperienceFilter === '10+') return candidateExp > 10;
+      return true;
+    });
+  }
+
+  // Joining date filter
+  if (selectedJoiningDateFilter !== 'All') {
+    filtered = filtered.filter(c => {
+      const candidateJoin = parseInt(c.availableToJoin);
+      if (selectedJoiningDateFilter === '0-15') return candidateJoin >= 0 && candidateJoin <= 15;
+      if (selectedJoiningDateFilter === '16-30') return candidateJoin >= 16 && candidateJoin <= 30;
+      if (selectedJoiningDateFilter === '31-45') return candidateJoin >= 31 && candidateJoin <= 45;
+      if (selectedJoiningDateFilter === '46+') return candidateJoin >= 46;
+      return true;
+    });
+  }
+
   setFilteredCandidates(filtered);
 };
-
   const calculateStats = () => {
     const total = filteredCandidates.length;
     const contacted = filteredCandidates.filter(c => c.contacted === 'Yes').length;
@@ -2526,40 +2564,23 @@ if (currentView === 'job-listings') {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-4">
-              <Filter className="w-5 h-5 text-gray-600" />
-              <select
-                value={selectedProfile}
-                onChange={(e) => setSelectedProfile(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-              >
-                <option value="All">All Profiles</option>
-                <option value="Teacher">Teacher</option>
-                <option value="Program Manager">Program Manager</option>
-                <option value="Coordinator">Coordinator</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-4">
-              <Filter className="w-5 h-5 text-gray-600" />
-              <select
-                value={selectedStatusFilter}
-                onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-              >
-                <option value="All">All Status</option>
-                <option value="Not Contacted">Not Contacted</option>
-                <option value="Contacted">Contacted</option>
-                <option value="Screening">Screening</option>
-                <option value="Fits">Fits</option>
-                <option value="Shortlisted">Shortlisted</option>
-                <option value="Rejected">Rejected</option>
-                <option value="Hired">Hired</option>
-              </select>
-            </div>
-          </div>
-        </div>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="flex items-center gap-4">
+      <Filter className="w-5 h-5 text-gray-600" />
+      <select
+        value={selectedProfile}
+        ...
+      </select>
+    </div>
+    <div className="flex items-center gap-4">
+      <Filter className="w-5 h-5 text-gray-600" />
+      <select
+        value={selectedStatusFilter}
+        ...
+      </select>
+    </div>
+  </div>
+</div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   {filteredCandidates.map((candidate) => (
