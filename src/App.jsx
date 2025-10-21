@@ -154,7 +154,9 @@ console.log('🔄 Component render - jobs.length:', jobs.length);
     hired: 0
   });
   // Add these functions after your useState declarations and before useEffect
-
+const [expandedCandidate, setExpandedCandidate] = useState(null);  // ADD THIS LINE
+const [selectedStateFilter, setSelectedStateFilter] = useState('All');  // ADD THIS LINE
+const [selectedDistrictFilter, setSelectedDistrictFilter] = useState('All');  // ADD THIS LINE
 const addEducation = () => {
   setFormData(prev => ({
     ...prev,
@@ -320,6 +322,10 @@ const deleteCandidate = async (candidateId, candidateName) => {
   useEffect(() => {
     calculateStats();
   }, [filteredCandidates]);
+  
+  useEffect(() => {
+  applyFilters();
+}, [selectedProfile, selectedStatusFilter, selectedStateFilter, selectedDistrictFilter, candidates]);
 
   const loadUserRole = async (uid) => {
     try {
@@ -457,32 +463,44 @@ const sendEmail = async (candidate, type) => {
 // END OF NEW FUNCTION ⬆️⬆️⬆️
 
   const applyFilters = () => {
-    let filtered = [...candidates];
+  let filtered = [...candidates];
 
-    if (selectedProfile !== 'All') {
-      filtered = filtered.filter(c => c.profile === selectedProfile);
+  if (selectedProfile !== 'All') {
+    filtered = filtered.filter(c => c.profile === selectedProfile);
+  }
+
+  if (selectedStatusFilter !== 'All') {
+    if (selectedStatusFilter === 'Not Contacted') {
+      filtered = filtered.filter(c => c.contacted === 'No');
+    } else if (selectedStatusFilter === 'Contacted') {
+      filtered = filtered.filter(c => c.contacted === 'Yes');
+    } else if (selectedStatusFilter === 'Screening') {
+      filtered = filtered.filter(c => c.screening === 'Yes');
+    } else if (selectedStatusFilter === 'Fits') {
+      filtered = filtered.filter(c => c.fits === 'Yes');
+    } else if (selectedStatusFilter === 'Shortlisted') {
+      filtered = filtered.filter(c => c.status === 'Shortlisted');
+    } else if (selectedStatusFilter === 'Rejected') {
+      filtered = filtered.filter(c => c.status === 'Rejected');
+    } else if (selectedStatusFilter === 'Hired') {
+      filtered = filtered.filter(c => c.status === 'Hired');
     }
+  }
 
-    if (selectedStatusFilter !== 'All') {
-      if (selectedStatusFilter === 'Not Contacted') {
-        filtered = filtered.filter(c => c.contacted === 'No');
-      } else if (selectedStatusFilter === 'Contacted') {
-        filtered = filtered.filter(c => c.contacted === 'Yes');
-      } else if (selectedStatusFilter === 'Screening') {
-        filtered = filtered.filter(c => c.screening === 'Yes');
-      } else if (selectedStatusFilter === 'Fits') {
-        filtered = filtered.filter(c => c.fits === 'Yes');
-      } else if (selectedStatusFilter === 'Shortlisted') {
-        filtered = filtered.filter(c => c.status === 'Shortlisted');
-      } else if (selectedStatusFilter === 'Rejected') {
-        filtered = filtered.filter(c => c.status === 'Rejected');
-      } else if (selectedStatusFilter === 'Hired') {
-        filtered = filtered.filter(c => c.status === 'Hired');
-      }
-    }
+  // State filter
+  if (selectedStateFilter !== 'All') {
+    filtered = filtered.filter(c => 
+      c.homeState === selectedStateFilter || c.currentState === selectedStateFilter
+    );
+  }
 
-    setFilteredCandidates(filtered);
-  };
+  // District filter
+  if (selectedDistrictFilter !== 'All') {
+    filtered = filtered.filter(c => c.homeDistrict === selectedDistrictFilter);
+  }
+
+  setFilteredCandidates(filtered);
+};
 
   const calculateStats = () => {
     const total = filteredCandidates.length;
@@ -528,7 +546,7 @@ const sendEmail = async (candidate, type) => {
       const submittedDate = data.submittedAt ? new Date(data.submittedAt) : null;
       
       // Check if email or phone matches AND application is within last 6 months
-      if ((data.email === email || data.phone === phone) && submittedDate) {
+      if ((data.email === email || data.phone === phone) && submittedDate && !isNaN(submittedDate.getTime())) {
         return submittedDate > sixMonthsAgo;
       }
       return false;
@@ -537,10 +555,16 @@ const sendEmail = async (candidate, type) => {
     if (recentApplication) {
       const lastApplicationDate = new Date(recentApplication.data().submittedAt);
       const monthsAgo = Math.floor((new Date() - lastApplicationDate) / (1000 * 60 * 60 * 24 * 30));
+      
+      // Calculate the date when they can reapply (6 months from last application)
+      const canReapplyDate = new Date(lastApplicationDate);
+      canReapplyDate.setMonth(canReapplyDate.getMonth() + 6);
+      
       return {
         hasRecent: true,
         lastAppliedDate: lastApplicationDate.toLocaleDateString('en-IN'),
-        monthsAgo: monthsAgo
+        monthsAgo: monthsAgo,
+        canReapplyDate: canReapplyDate.toLocaleDateString('en-IN')
       };
     }
 
@@ -601,9 +625,9 @@ const calculateAge = (dob) => {
   // Check for recent application - SECOND CHECK
   const recentCheck = await checkRecentApplication(formData.email, formData.phone);
   if (recentCheck.hasRecent) {
-    alert(`You have already applied on ${recentCheck.lastAppliedDate} (${recentCheck.monthsAgo} months ago). Please wait at least 6 months before applying again. You can reapply after ${new Date(new Date(recentCheck.lastAppliedDate).setMonth(new Date(recentCheck.lastAppliedDate).getMonth() + 6)).toLocaleDateString('en-IN')}.`);
-    return;
-  }
+  alert(`You have already applied on ${recentCheck.lastAppliedDate} (${recentCheck.monthsAgo} months ago). Please wait at least 6 months before applying again. You can reapply after ${recentCheck.canReapplyDate}.`);
+  return;
+}
 
   // Validation
   if (!formData.resume) {
@@ -2538,104 +2562,204 @@ if (currentView === 'job-listings') {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCandidates.map((candidate) => (
-            <div key={candidate.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-              <div className="flex items-start gap-4 mb-4">
-                <img
-                  src={candidate.photo || 'https://via.placeholder.com/80'}
-                  alt={candidate.name}
-                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                />
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-800">{candidate.name}</h3>
-                  <p className="text-sm text-gray-600">{candidate.profile}</p>
-                  <p className="text-xs text-gray-500">{candidate.experience} years exp</p>
-                </div>
-                {userRole === 'super_admin' && (
-                  <button
-                    onClick={() => deleteCandidate(candidate.id, candidate.name)}
-                    className="text-red-600 hover:text-red-800"
-                    title="Delete candidate"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                )}
-              </div>
-
-              <div className="space-y-2 mb-4 text-sm text-gray-700">
-                <p><strong>Email:</strong> {candidate.email}</p>
-                <p><strong>Phone:</strong> {candidate.phone}</p>
-                {candidate.howHeard && (
-                  <p><strong>Source:</strong> {candidate.howHeard}</p>
-                )}
-                {candidate.referrerName && (
-                  <p><strong>Referred by:</strong> {candidate.referrerName}</p>
-                )}
-                {candidate.resumeURL && (
-                  <a href={candidate.resumeURL} target="_blank" rel="noopener noreferrer" className="bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent hover:underline">
-                    View Resume
-                  </a>
-                )}
-              </div>
-
-              <div className="space-y-3 border-t pt-4">
-                <div>
-                  <label className="text-xs text-gray-600 block mb-1">Contacted?</label>
-                  <select
-                    value={candidate.contacted || 'No'}
-                    onChange={(e) => updateCandidate(candidate.id, 'contacted', e.target.value, candidate)}
-                    disabled={userRole === 'guest'}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
-                  >
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-600 block mb-1">Screening Done?</label>
-                  <select
-                    value={candidate.screening || 'No'}
-                    onChange={(e) => updateCandidate(candidate.id, 'screening', e.target.value, candidate)}
-                    disabled={userRole === 'guest'}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
-                  >
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-600 block mb-1">Fits for Program?</label>
-                  <select
-                    value={candidate.fits || 'No'}
-                    onChange={(e) => updateCandidate(candidate.id, 'fits', e.target.value, candidate)}
-                    disabled={userRole === 'guest'}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
-                  >
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-600 block mb-1">Status</label>
-                  <select
-                    value={candidate.status || 'Pending'}
-                    onChange={(e) => updateCandidate(candidate.id, 'status', e.target.value, candidate)}
-                    disabled={userRole === 'guest'}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Shortlisted">Shortlisted</option>
-                    <option value="Rejected">Rejected</option>
-                    <option value="Hired">Hired</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          ))}
+  {filteredCandidates.map((candidate) => (
+    <div key={candidate.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+      <div className="flex items-start gap-4 mb-4">
+        <img
+          src={candidate.photo || 'https://via.placeholder.com/80'}
+          alt={candidate.name}
+          className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+        />
+        <div className="flex-1">
+          <h3 className="text-lg font-bold text-gray-800">{candidate.name}</h3>
+          <p className="text-sm text-gray-600">{candidate.profile}</p>
+          <p className="text-xs text-gray-500">{candidate.experience} years exp</p>
         </div>
+        {userRole === 'super_admin' && (
+          <button
+            onClick={() => deleteCandidate(candidate.id, candidate.name)}
+            className="text-red-600 hover:text-red-800"
+            title="Delete candidate"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-2 mb-4 text-sm text-gray-700">
+        <p><strong>Email:</strong> {candidate.email}</p>
+        <p><strong>Phone:</strong> {candidate.phone}</p>
+        <p><strong>Age:</strong> {candidate.age} years</p>
+        <p><strong>Home:</strong> {candidate.homeDistrict}, {candidate.homeState}</p>
+        <p><strong>Current:</strong> {candidate.currentState}</p>
+        {candidate.howHeard && (
+          <p><strong>Source:</strong> {candidate.howHeard}</p>
+        )}
+        {candidate.referrerName && (
+          <p><strong>Referred by:</strong> {candidate.referrerName}</p>
+        )}
+        {candidate.resumeURL && (
+          <a href={candidate.resumeURL} target="_blank" rel="noopener noreferrer" className="bg-gradient-to-r from-yellow-600 to-red-600 bg-clip-text text-transparent hover:underline block">
+            View Resume
+          </a>
+        )}
+      </div>
+
+      {/* View Full Profile Button */}
+      <button
+        onClick={() => setExpandedCandidate(expandedCandidate === candidate.id ? null : candidate.id)}
+        className="w-full mb-3 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+      >
+        <Eye className="w-4 h-4" />
+        {expandedCandidate === candidate.id ? 'Hide Full Profile' : 'View Full Profile'}
+      </button>
+
+      {/* Expanded Details */}
+      {expandedCandidate === candidate.id && (
+        <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200 max-h-96 overflow-y-auto">
+          <h4 className="font-bold text-gray-800 mb-3 text-sm">Full Profile Details</h4>
+          
+          <div className="space-y-3 text-xs">
+            {/* Personal Info */}
+            <div>
+              <p className="font-semibold text-gray-700 mb-1">Personal Information:</p>
+              <p><strong>DOB:</strong> {candidate.dob}</p>
+              <p><strong>Gender:</strong> {candidate.gender}</p>
+            </div>
+
+            {/* Job Details */}
+            <div>
+              <p className="font-semibold text-gray-700 mb-1">Job Details:</p>
+              <p><strong>Current Salary:</strong> ₹{candidate.currentSalary}</p>
+              <p><strong>Can Join In:</strong> {candidate.availableToJoin} days</p>
+            </div>
+
+            {/* Education */}
+            {candidate.education && candidate.education.length > 0 && (
+              <div>
+                <p className="font-semibold text-gray-700 mb-1">Education:</p>
+                {candidate.education.map((edu, idx) => (
+                  <div key={idx} className="ml-2 mb-2 pb-2 border-b border-gray-200 last:border-0">
+                    <p><strong>Degree:</strong> {edu.qualification === 'Others' ? edu.otherQualification : edu.qualification}</p>
+                    <p><strong>College:</strong> {edu.college === 'Other' ? edu.otherCollege : edu.college}</p>
+                    <p><strong>Year:</strong> {edu.year}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Work Experience */}
+            {candidate.workExperience && candidate.workExperience.length > 0 && candidate.workExperience[0].organization && (
+              <div>
+                <p className="font-semibold text-gray-700 mb-1">Work Experience:</p>
+                {candidate.workExperience.map((exp, idx) => (
+                  <div key={idx} className="ml-2 mb-2 pb-2 border-b border-gray-200 last:border-0">
+                    <p><strong>Organization:</strong> {exp.organization}</p>
+                    <p><strong>Role:</strong> {exp.jobTitle}</p>
+                    <p><strong>Location:</strong> {exp.location}</p>
+                    <p><strong>Duration:</strong> {exp.joiningDate} to {exp.currentlyWorking ? 'Present' : exp.relievingDate}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Motivation */}
+            {candidate.motivation && (
+              <div>
+                <p className="font-semibold text-gray-700 mb-1">Motivation:</p>
+                <p className="text-gray-600 italic">{candidate.motivation}</p>
+              </div>
+            )}
+
+            {/* Pay Cut Question */}
+            {candidate.payCut && (
+              <div>
+                <p className="font-semibold text-gray-700 mb-1">About Pay Cut:</p>
+                <p className="text-gray-600 italic">{candidate.payCut}</p>
+              </div>
+            )}
+
+            {/* Additional Documents */}
+            {candidate.additionalDocs && candidate.additionalDocs.length > 0 && (
+              <div>
+                <p className="font-semibold text-gray-700 mb-1">Additional Documents:</p>
+                {candidate.additionalDocs.map((doc, idx) => (
+                  <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:underline ml-2">
+                    📄 {doc.name}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {/* Application Date */}
+            {candidate.submittedAt && (
+              <div>
+                <p className="font-semibold text-gray-700 mb-1">Applied On:</p>
+                <p>{new Date(candidate.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3 border-t pt-4">
+        <div>
+          <label className="text-xs text-gray-600 block mb-1">Contacted?</label>
+          <select
+            value={candidate.contacted || 'No'}
+            onChange={(e) => updateCandidate(candidate.id, 'contacted', e.target.value, candidate)}
+            disabled={userRole === 'guest'}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
+          >
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-600 block mb-1">Screening Done?</label>
+          <select
+            value={candidate.screening || 'No'}
+            onChange={(e) => updateCandidate(candidate.id, 'screening', e.target.value, candidate)}
+            disabled={userRole === 'guest'}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
+          >
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-600 block mb-1">Fits for Program?</label>
+          <select
+            value={candidate.fits || 'No'}
+            onChange={(e) => updateCandidate(candidate.id, 'fits', e.target.value, candidate)}
+            disabled={userRole === 'guest'}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
+          >
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-600 block mb-1">Status</label>
+          <select
+            value={candidate.status || 'Pending'}
+            onChange={(e) => updateCandidate(candidate.id, 'status', e.target.value, candidate)}
+            disabled={userRole === 'guest'}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
+          >
+            <option value="Pending">Pending</option>
+            <option value="Shortlisted">Shortlisted</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Hired">Hired</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
 
         {filteredCandidates.length === 0 && (
           <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
