@@ -157,10 +157,7 @@ console.log('🔄 Component render - jobs.length:', jobs.length);
     notContacted: 0,
     hired: 0
   });
-  // Add these functions after your useState declarations and before useEffect
-const [expandedCandidate, setExpandedCandidate] = useState(null);  // ADD THIS LINE
-const [selectedStateFilter, setSelectedStateFilter] = useState('All');  // ADD THIS LINE
-const [selectedDistrictFilter, setSelectedDistrictFilter] = useState('All');  // ADD THIS LINE
+
 const addEducation = () => {
   setFormData(prev => ({
     ...prev,
