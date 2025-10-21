@@ -2660,14 +2660,6 @@ if (currentView === 'job-listings') {
         onChange={(e) => setSelectedProfile(e.target.value)}
         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
       >
-        <div>
-  <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">Profile/Position</label>
-      <select
-        value={selectedProfile}
-        onChange={(e) => setSelectedProfile(e.target.value)}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-      >
         <option value="All">All Profiles</option>
         {[...new Set(candidates.map(c => c.profile).filter(Boolean))].map(profile => (
           <option key={profile} value={profile}>{profile}</option>
@@ -2757,7 +2749,6 @@ if (currentView === 'job-listings') {
     </div>
   </div>
 
-  {/* Clear Filters Button */}
   <div className="mt-4 flex justify-end">
     <button
       onClick={() => {
