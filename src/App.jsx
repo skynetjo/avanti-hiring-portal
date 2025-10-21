@@ -2561,21 +2561,123 @@ if (currentView === 'job-listings') {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div className="flex items-center gap-4">
-      <Filter className="w-5 h-5 text-gray-600" />
+  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+    <Filter className="w-5 h-5 text-orange-600" />
+    Filter Candidates
+  </h3>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Profile/Position</label>
       <select
         value={selectedProfile}
-        ...
+        onChange={(e) => setSelectedProfile(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      >
+        <option value="All">All Profiles</option>
+        <option value="Teacher">Teacher</option>
+        <option value="Program Manager">Program Manager</option>
+        <option value="Coordinator">Coordinator</option>
+        <option value="Other">Other</option>
       </select>
     </div>
-    <div className="flex items-center gap-4">
-      <Filter className="w-5 h-5 text-gray-600" />
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
       <select
         value={selectedStatusFilter}
-        ...
+        onChange={(e) => setSelectedStatusFilter(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      >
+        <option value="All">All Status</option>
+        <option value="Not Contacted">Not Contacted</option>
+        <option value="Contacted">Contacted</option>
+        <option value="Screening">Screening</option>
+        <option value="Fits">Fits</option>
+        <option value="Shortlisted">Shortlisted</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Hired">Hired</option>
       </select>
     </div>
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">State (Home/Current)</label>
+      <select
+        value={selectedStateFilter}
+        onChange={(e) => setSelectedStateFilter(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      >
+        <option value="All">All States</option>
+        {INDIAN_STATES.map(state => (
+          <option key={state} value={state}>{state}</option>
+        ))}
+      </select>
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Home District</label>
+      <select
+        value={selectedDistrictFilter}
+        onChange={(e) => setSelectedDistrictFilter(e.target.value)}
+        disabled={selectedStateFilter === 'All'}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+      >
+        <option value="All">All Districts</option>
+        {selectedStateFilter !== 'All' && DISTRICTS[selectedStateFilter]?.map(district => (
+          <option key={district} value={district}>{district}</option>
+        ))}
+      </select>
+      {selectedStateFilter === 'All' && (
+        <p className="text-xs text-gray-500 mt-1">Select a state first</p>
+      )}
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Experience (Years)</label>
+      <select
+        value={selectedExperienceFilter}
+        onChange={(e) => setSelectedExperienceFilter(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      >
+        <option value="All">All Experience</option>
+        <option value="0">0 years (Fresher)</option>
+        <option value="1-2">1-2 years</option>
+        <option value="3-5">3-5 years</option>
+        <option value="6-10">6-10 years</option>
+        <option value="10+">10+ years</option>
+      </select>
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Available to Join (Days)</label>
+      <select
+        value={selectedJoiningDateFilter}
+        onChange={(e) => setSelectedJoiningDateFilter(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      >
+        <option value="All">Any Time</option>
+        <option value="0-15">0-15 days (Immediate)</option>
+        <option value="16-30">16-30 days</option>
+        <option value="31-45">31-45 days</option>
+        <option value="46+">46+ days</option>
+      </select>
+    </div>
+  </div>
+
+  {/* Clear Filters Button */}
+  <div className="mt-4 flex justify-end">
+    <button
+      onClick={() => {
+        setSelectedProfile('All');
+        setSelectedStatusFilter('All');
+        setSelectedStateFilter('All');
+        setSelectedDistrictFilter('All');
+        setSelectedExperienceFilter('All');
+        setSelectedJoiningDateFilter('All');
+      }}
+      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
+    >
+      Clear All Filters
+    </button>
   </div>
 </div>
 
