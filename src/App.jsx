@@ -2635,11 +2635,19 @@ if (currentView === 'job-listings') {
         onChange={(e) => setSelectedProfile(e.target.value)}
         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
       >
-        <option value="All">All Profiles</option>
-        <option value="Teacher">Teacher</option>
-        <option value="Program Manager">Program Manager</option>
-        <option value="Coordinator">Coordinator</option>
-        <option value="Other">Other</option>
+        <div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">Profile/Position</label>
+  <select
+    value={selectedProfile}
+    onChange={(e) => setSelectedProfile(e.target.value)}
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+  >
+    <option value="All">All Profiles</option>
+    {[...new Set(jobs.map(job => job.title))].map(title => (
+      <option key={title} value={title}>{title}</option>
+    ))}
+  </select>
+</div>
       </select>
     </div>
 
@@ -2748,7 +2756,7 @@ if (currentView === 'job-listings') {
     <div key={candidate.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start gap-4 mb-4">
         <img
-          src={candidate.photo || 'https://via.placeholder.com/80'}
+          src={candidate.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(candidate.name) + '&size=80&background=random'}
           alt={candidate.name}
           className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
         />
