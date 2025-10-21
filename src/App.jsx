@@ -153,7 +153,145 @@ console.log('🔄 Component render - jobs.length:', jobs.length);
     notContacted: 0,
     hired: 0
   });
+  // Add these functions after your useState declarations and before useEffect
 
+const addEducation = () => {
+  setFormData(prev => ({
+    ...prev,
+    education: [...prev.education, {
+      qualification: '',
+      otherQualification: '',
+      college: '',
+      otherCollege: '',
+      year: ''
+    }]
+  }));
+};
+
+const removeEducation = (index) => {
+  setFormData(prev => ({
+    ...prev,
+    education: prev.education.filter((_, i) => i !== index)
+  }));
+};
+
+const updateEducation = (index, field, value) => {
+  setFormData(prev => ({
+    ...prev,
+    education: prev.education.map((edu, i) => 
+      i === index ? { ...edu, [field]: value } : edu
+    )
+  }));
+};
+
+const addWorkExperience = () => {
+  setFormData(prev => ({
+    ...prev,
+    workExperience: [...prev.workExperience, {
+      organization: '',
+      jobTitle: '',
+      joiningDate: '',
+      currentlyWorking: false,
+      relievingDate: '',
+      location: ''
+    }]
+  }));
+};
+
+const removeWorkExperience = (index) => {
+  setFormData(prev => ({
+    ...prev,
+    workExperience: prev.workExperience.filter((_, i) => i !== index)
+  }));
+};
+
+const updateWorkExperience = (index, field, value) => {
+  setFormData(prev => ({
+    ...prev,
+    workExperience: prev.workExperience.map((exp, i) => 
+      i === index ? { ...exp, [field]: value } : exp
+    )
+  }));
+};
+
+const handleAdditionalDocsChange = (e) => {
+  const files = Array.from(e.target.files);
+  setFormData(prev => ({
+    ...prev,
+    additionalDocs: [...prev.additionalDocs, ...files]
+  }));
+};
+
+const removeAdditionalDoc = (index) => {
+  setFormData(prev => ({
+    ...prev,
+    additionalDocs: prev.additionalDocs.filter((_, i) => i !== index)
+  }));
+};
+
+const handleUpdateJob = async () => {
+  if (userRole !== 'super_admin') {
+    alert('Only Super Admins can edit jobs');
+    return;
+  }
+
+  if (!editingJob.title || !editingJob.department || !editingJob.location) {
+    alert('Please fill all required fields');
+    return;
+  }
+
+  try {
+    const jobRef = doc(db, 'jobs', editingJob.id);
+    const { id, ...jobData } = editingJob;
+    await updateDoc(jobRef, {
+      ...jobData,
+      updatedAt: new Date().toISOString()
+    });
+
+    alert('Job updated successfully!');
+    setEditingJob(null);
+    loadJobs();
+  } catch (error) {
+    console.error('Error updating job:', error);
+    alert('Failed to update job');
+  }
+};
+
+const handleDeleteJob = async (jobId, jobTitle) => {
+  if (userRole !== 'super_admin') {
+    alert('Only Super Admins can delete jobs');
+    return;
+  }
+
+  if (confirm(`Are you sure you want to delete "${jobTitle}"?`)) {
+    try {
+      await deleteDoc(doc(db, 'jobs', jobId));
+      alert('Job deleted successfully!');
+      loadJobs();
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      alert('Failed to delete job');
+    }
+  }
+};
+
+const deleteCandidate = async (candidateId, candidateName) => {
+  if (userRole !== 'super_admin') {
+    alert('Only Super Admins can delete candidates');
+    return;
+  }
+
+  if (confirm(`Are you sure you want to permanently delete ${candidateName}'s application? This cannot be undone.`)) {
+    try {
+      await deleteDoc(doc(db, 'candidates', candidateId));
+      alert('Candidate deleted successfully!');
+      loadCandidates();
+    } catch (error) {
+      console.error('Error deleting candidate:', error);
+      alert('Failed to delete candidate');
+    }
+  }
+};
   useEffect(() => {
   console.log('🚀 App mounted, loading jobs for public view...');
   // Load jobs immediately for everyone (public access)
