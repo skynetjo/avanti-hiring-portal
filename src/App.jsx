@@ -2566,87 +2566,132 @@ if (currentView === 'job-listings') {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <Users className="w-8 h-8 text-orange-600" />
-              <div>
-                <p className="text-xs text-gray-600">Total</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
-              </div>
-            </div>
-          </div>
+  <div 
+    onClick={() => {
+      setSelectedStatusFilter('All');
+      setSelectedProfile('All');
+      setSelectedStateFilter('All');
+      setSelectedDistrictFilter('All');
+      setSelectedExperienceFilter('All');
+      setSelectedJoiningDateFilter('All');
+      setSelectedGenderFilter('All');
+      setSelectedSalaryFilter('All');
+    }}
+    className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-orange-400 transition-all"
+  >
+    <div className="flex items-center gap-3">
+      <Users className="w-8 h-8 text-orange-600" />
+      <div>
+        <p className="text-xs text-gray-600">Total</p>
+        <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
+      </div>
+    </div>
+  </div>
 
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <UserCheck className="w-8 h-8 text-green-600" />
-              <div>
-                <p className="text-xs text-gray-600">Contacted</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.contacted}</p>
-              </div>
-            </div>
-          </div>
+  <div 
+    onClick={() => setSelectedStatusFilter('Contacted')}
+    className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-green-400 transition-all"
+  >
+    <div className="flex items-center gap-3">
+      <UserCheck className="w-8 h-8 text-green-600" />
+      <div>
+        <p className="text-xs text-gray-600">Contacted</p>
+        <p className="text-2xl font-bold text-gray-800">{stats.contacted}</p>
+      </div>
+    </div>
+  </div>
 
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <Eye className="w-8 h-8 text-purple-600" />
-              <div>
-                <p className="text-xs text-gray-600">Screening</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.screening}</p>
-              </div>
-            </div>
-          </div>
+  <div 
+    onClick={() => setSelectedStatusFilter('Screening')}
+    className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-purple-400 transition-all"
+  >
+    <div className="flex items-center gap-3">
+      <Eye className="w-8 h-8 text-purple-600" />
+      <div>
+        <p className="text-xs text-gray-600">Screening</p>
+        <p className="text-2xl font-bold text-gray-800">{stats.screening}</p>
+      </div>
+    </div>
+  </div>
 
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <UserCheck className="w-8 h-8 text-teal-600" />
-              <div>
-                <p className="text-xs text-gray-600">Fits</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.fits}</p>
-              </div>
-            </div>
-          </div>
+  <div 
+    onClick={() => setSelectedStatusFilter('Fits')}
+    className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-teal-400 transition-all"
+  >
+    <div className="flex items-center gap-3">
+      <UserCheck className="w-8 h-8 text-teal-600" />
+      <div>
+        <p className="text-xs text-gray-600">Fits</p>
+        <p className="text-2xl font-bold text-gray-800">{stats.fits}</p>
+      </div>
+    </div>
+  </div>
 
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <UserCheck className="w-8 h-8 text-green-600" />
-              <div>
-                <p className="text-xs text-gray-600">Shortlisted</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.shortlisted}</p>
-              </div>
-            </div>
-          </div>
+  <div 
+    onClick={() => setSelectedStatusFilter('Shortlisted')}
+    className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-green-400 transition-all"
+  >
+    <div className="flex items-center gap-3">
+      <UserCheck className="w-8 h-8 text-green-600" />
+      <div>
+        <p className="text-xs text-gray-600">Shortlisted</p>
+        <p className="text-2xl font-bold text-gray-800">{stats.shortlisted}</p>
+      </div>
+    </div>
+  </div>
 
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <UserX className="w-8 h-8 text-red-600" />
-              <div>
-                <p className="text-xs text-gray-600">Rejected</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.rejected}</p>
-              </div>
-            </div>
-          </div>
+  <div 
+    onClick={() => setSelectedStatusFilter('Rejected')}
+    className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-red-400 transition-all"
+  >
+    <div className="flex items-center gap-3">
+      <UserX className="w-8 h-8 text-red-600" />
+      <div>
+        <p className="text-xs text-gray-600">Rejected</p>
+        <p className="text-2xl font-bold text-gray-800">{stats.rejected}</p>
+      </div>
+    </div>
+  </div>
 
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <UserCheck className="w-8 h-8 text-blue-600" />
-              <div>
-                <p className="text-xs text-gray-600">Hired</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.hired}</p>
-              </div>
-            </div>
-          </div>
+  <div 
+    onClick={() => setSelectedStatusFilter('Hired')}
+    className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-blue-400 transition-all"
+  >
+    <div className="flex items-center gap-3">
+      <UserCheck className="w-8 h-8 text-blue-600" />
+      <div>
+        <p className="text-xs text-gray-600">Hired</p>
+        <p className="text-2xl font-bold text-gray-800">{stats.hired}</p>
+      </div>
+    </div>
+  </div>
 
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <Clock className="w-8 h-8 text-orange-600" />
-              <div>
-                <p className="text-xs text-gray-600">Not Contacted</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.notContacted}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
+  <div 
+    onClick={() => setSelectedStatusFilter('Not Contacted')}
+    className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-orange-400 transition-all"
+  >
+    <div className="flex items-center gap-3">
+      <Clock className="w-8 h-8 text-orange-600" />
+      <div>
+        <p className="text-xs text-gray-600">Not Contacted</p>
+        <p className="text-2xl font-bold text-gray-800">{stats.notContacted}</p>
+      </div>
+    </div>
+  </div>
+</div>
+        {selectedStatusFilter !== 'All' && (
+  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+    <span className="text-blue-800 font-medium">
+      🔍 Filtering by: <strong>{selectedStatusFilter}</strong>
+    </span>
+    <button
+      onClick={() => setSelectedStatusFilter('All')}
+      className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
+    >
+      Clear Filter
+    </button>
+  </div>
+)}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
   <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
     <Filter className="w-5 h-5 text-orange-600" />
