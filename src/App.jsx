@@ -134,6 +134,8 @@ function HiringPortal() {
   const [selectedDistrictFilter, setSelectedDistrictFilter] = useState('All');
   const [selectedExperienceFilter, setSelectedExperienceFilter] = useState('All');
   const [selectedJoiningDateFilter, setSelectedJoiningDateFilter] = useState('All');
+  const [selectedGenderFilter, setSelectedGenderFilter] = useState('All');
+  const [selectedSalaryFilter, setSelectedSalaryFilter] = useState('All');
   const [expandedCandidate, setExpandedCandidate] = useState(null);
   const [jobs, setJobs] = useState([]);
 const [selectedJob, setSelectedJob] = useState(null);
@@ -399,7 +401,7 @@ const deleteCandidate = async (candidateId, candidateName) => {
   
   useEffect(() => {
   applyFilters();
-}, [selectedProfile, selectedStatusFilter, selectedStateFilter, selectedDistrictFilter, selectedExperienceFilter, selectedJoiningDateFilter, candidates]);
+}, [selectedProfile, selectedStatusFilter, selectedStateFilter, selectedDistrictFilter, selectedExperienceFilter, selectedJoiningDateFilter, selectedGenderFilter, selectedSalaryFilter, candidates]);
 
   const loadUserRole = async (uid) => {
     try {
@@ -594,6 +596,24 @@ const sendEmail = async (candidate, type) => {
       if (selectedJoiningDateFilter === '16-30') return candidateJoin >= 16 && candidateJoin <= 30;
       if (selectedJoiningDateFilter === '31-45') return candidateJoin >= 31 && candidateJoin <= 45;
       if (selectedJoiningDateFilter === '46+') return candidateJoin >= 46;
+      return true;
+    });
+  }
+
+  // Gender filter - NEW
+  if (selectedGenderFilter !== 'All') {
+    filtered = filtered.filter(c => c.gender === selectedGenderFilter);
+  }
+
+  // Salary filter - NEW
+  if (selectedSalaryFilter !== 'All') {
+    filtered = filtered.filter(c => {
+      const salary = parseInt(c.currentSalary);
+      if (selectedSalaryFilter === '0-3') return salary >= 0 && salary <= 300000;
+      if (selectedSalaryFilter === '3-5') return salary > 300000 && salary <= 500000;
+      if (selectedSalaryFilter === '5-8') return salary > 500000 && salary <= 800000;
+      if (selectedSalaryFilter === '8-12') return salary > 800000 && salary <= 1200000;
+      if (selectedSalaryFilter === '12+') return salary > 1200000;
       return true;
     });
   }
@@ -2792,22 +2812,55 @@ if (currentView === 'job-listings') {
         <option value="46+">46+ days</option>
       </select>
     </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+      <select
+        value={selectedGenderFilter}
+        onChange={(e) => setSelectedGenderFilter(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      >
+        <option value="All">All Genders</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Non-Binary">Non-Binary</option>
+        <option value="Transgender">Transgender</option>
+        <option value="Prefer not to disclose">Prefer not to disclose</option>
+      </select>
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Current Salary (in Lakhs)</label>
+      <select
+        value={selectedSalaryFilter}
+        onChange={(e) => setSelectedSalaryFilter(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+      >
+        <option value="All">All Salary Ranges</option>
+        <option value="0-3">₹0 - ₹3 LPA</option>
+        <option value="3-5">₹3 - ₹5 LPA</option>
+        <option value="5-8">₹5 - ₹8 LPA</option>
+        <option value="8-12">₹8 - ₹12 LPA</option>
+        <option value="12+">₹12+ LPA</option>
+      </select>
+    </div>
   </div>
 
   <div className="mt-4 flex justify-end">
     <button
-      onClick={() => {
-        setSelectedProfile('All');
-        setSelectedStatusFilter('All');
-        setSelectedStateFilter('All');
-        setSelectedDistrictFilter('All');
-        setSelectedExperienceFilter('All');
-        setSelectedJoiningDateFilter('All');
-      }}
-      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
-    >
-      Clear All Filters
-    </button>
+  onClick={() => {
+    setSelectedProfile('All');
+    setSelectedStatusFilter('All');
+    setSelectedStateFilter('All');
+    setSelectedDistrictFilter('All');
+    setSelectedExperienceFilter('All');
+    setSelectedJoiningDateFilter('All');
+    setSelectedGenderFilter('All');
+    setSelectedSalaryFilter('All');
+  }}
+  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
+>
+  Clear All Filters
+</button>
   </div>
 </div>
 
