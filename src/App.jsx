@@ -600,12 +600,12 @@ const sendEmail = async (candidate, type) => {
     });
   }
 
-  // Gender filter - NEW
+  // Gender filter
   if (selectedGenderFilter !== 'All') {
     filtered = filtered.filter(c => c.gender === selectedGenderFilter);
   }
 
-  // Salary filter - NEW
+  // Salary filter
   if (selectedSalaryFilter !== 'All') {
     filtered = filtered.filter(c => {
       const salary = parseInt(c.currentSalary);
@@ -617,6 +617,13 @@ const sendEmail = async (candidate, type) => {
       return true;
     });
   }
+
+  // ✨ NEW: Sort by application date (most recent first)
+  filtered.sort((a, b) => {
+    const dateA = new Date(a.submittedAt || 0);
+    const dateB = new Date(b.submittedAt || 0);
+    return dateB - dateA; // Descending order (newest first)
+  });
 
   setFilteredCandidates(filtered);
 };
