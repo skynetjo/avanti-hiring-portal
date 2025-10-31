@@ -298,8 +298,8 @@ const removeAdditionalDoc = (index) => {
 };
 
 const handleUpdateJob = async () => {
-  if (userRole !== 'super_admin') {
-    alert('Only Super Admins can edit jobs');
+  if (userRole !== 'super_admin' && userRole !== 'admin') {
+    alert('Only Super Admins and Admins can edit jobs');
     return;
   }
 
@@ -326,8 +326,8 @@ const handleUpdateJob = async () => {
 };
 
 const handleDeleteJob = async (jobId, jobTitle) => {
-  if (userRole !== 'super_admin') {
-    alert('Only Super Admins can delete jobs');
+  if (userRole !== 'super_admin' && userRole !== 'admin') {
+    alert('Only Super Admins and Admins can delete jobs');
     return;
   }
 
@@ -1057,8 +1057,8 @@ if (formData.howHeard === 'Other' && !formData.howHeardOther) {
   };
 
   const handleAddJob = async () => {
-  if (userRole !== 'super_admin') {
-    alert('Only Super Admins can add jobs');
+  if (userRole !== 'super_admin' && userRole !== 'admin') {
+    alert('Only Super Admins and Admins can add jobs');
     return;
   }
 
@@ -2238,15 +2238,15 @@ if (currentView === 'job-listings') {
         </div>
 
         <div className="max-w-6xl mx-auto px-6 py-8">
-          {userRole !== 'super_admin' && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-              <p className="text-yellow-800 text-sm">
-                <strong>Note:</strong> Only Super Admins can add, edit, or delete jobs.
-              </p>
-            </div>
-          )}
+          {userRole !== 'super_admin' && userRole !== 'admin' && (
+  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+    <p className="text-yellow-800 text-sm">
+      <strong>Note:</strong> Only Super Admins and Admins can add, edit, or delete jobs.
+    </p>
+  </div>
+)}
 
-          {userRole === 'super_admin' && !editingJob && (
+          {(userRole === 'super_admin' || userRole === 'admin') && !editingJob && (
             <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
               <h2 className="text-xl font-bold text-gray-800 mb-6">Add New Job</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2491,28 +2491,11 @@ if (currentView === 'job-listings') {
                         {job.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </div>
-                    {userRole === 'super_admin' && (
+                    {(userRole === 'super_admin' || userRole === 'admin') && (
   <div className="flex gap-2">
-    <button
-      onClick={() => setEditingJob(job)}
-      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-    >
-      Edit
-    </button>
-    <button
-      onClick={() => {
-        const { id, createdAt, updatedAt, ...jobData } = job;
-        setNewJob({...jobData, title: jobData.title + ' (Copy)'});
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }}
-      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-    >
-      Duplicate
-    </button>
-    <button
-      onClick={() => handleDeleteJob(job.id, job.title)}
-      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-    >
+    <button onClick={() => setEditingJob(job)}>Edit</button>
+    <button onClick={() => {...}}>Duplicate</button>
+    <button onClick={() => handleDeleteJob(job.id, job.title)}>
       <Trash2 className="w-4 h-4" />
     </button>
   </div>
@@ -2562,15 +2545,15 @@ if (currentView === 'job-listings') {
                 <Home className="w-5 h-5" />
                 Home
               </button>
-              {userRole === 'super_admin' && (
-                <button
-                  onClick={() => setCurrentView('manage-jobs')}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <Briefcase className="w-5 h-5" />
-                  Manage Jobs
-                </button>
-              )}
+              {(userRole === 'super_admin' || userRole === 'admin') && (
+  <button
+    onClick={() => setCurrentView('manage-jobs')}
+    className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+  >
+    <Briefcase className="w-5 h-5" />
+    Manage Jobs
+  </button>
+)}
               <button
                 onClick={() => setCurrentView('settings')}
                 className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
