@@ -720,19 +720,19 @@ const calculateAge = (dob) => {
   };
 
   const handleFileChange = (e, fieldName) => {
-  const file = e.target.files[0];
-  if (file) {
-    if (file.size > 2000000) { // Changed from 5000000 to 2000000 (2MB)
-      alert('File size should be less than 2MB');
-      return;
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5000000) {
+        alert('File size should be less than 5MB');
+        return;
+      }
+      if (fieldName === 'resume' && file.type !== 'application/pdf') {
+        alert('Resume must be a PDF file');
+        return;
+      }
+      setFormData(prev => ({ ...prev, [fieldName]: file }));
     }
-    if (fieldName === 'resume' && file.type !== 'application/pdf') {
-      alert('Resume must be a PDF file');
-      return;
-    }
-    setFormData(prev => ({ ...prev, [fieldName]: file }));
-  }
-};
+  };
 
   const handleFormSubmit = async () => {
   // Age validation - MUST BE FIRST
@@ -1420,27 +1420,28 @@ if (currentView === 'job-listings') {
 
             <div className="space-y-8">
               {/* Resume Upload */}
-<div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
-  <label className="block text-lg font-semibold text-gray-800 mb-3">
-    Upload Your Resume <span className="text-red-500">*</span>
-  </label>
-  <p className="text-sm text-gray-600 mb-4">Upload your resume (PDF only, max 2MB)</p> {/* Changed from 5MB to 2MB */}
-  <div className="flex items-center gap-4">
-    <label className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-lg cursor-pointer hover:from-yellow-600 hover:to-red-600 transition-colors">
-      <Upload className="w-5 h-5" />
-      <span>Choose PDF Resume</span>
-      <input
-        type="file"
-        onChange={(e) => handleFileChange(e, 'resume')}
-        accept=".pdf"
-        className="hidden"
-      />
-    </label>
-    {formData.resume && (
-      <span className="text-sm text-green-600 font-medium">✓ {formData.resume.name}</span>
-    )}
-  </div>
-</div>
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
+                <label className="block text-lg font-semibold text-gray-800 mb-3">
+                  Upload Your Resume <span className="text-red-500">*</span>
+                </label>
+                <p className="text-sm text-gray-600 mb-4">Upload your resume (PDF only, max 5MB)</p>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-lg cursor-pointer hover:from-yellow-600 hover:to-red-600 transition-colors">
+                    <Upload className="w-5 h-5" />
+                    <span>Choose PDF Resume</span>
+                    <input
+                      type="file"
+                      onChange={(e) => handleFileChange(e, 'resume')}
+                      accept=".pdf"
+                      className="hidden"
+                    />
+                  </label>
+                  {formData.resume && (
+                    <span className="text-sm text-green-600 font-medium">✓ {formData.resume.name}</span>
+                  )}
+                </div>
+              </div>
+
               {/* Personal Information */}
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Personal Information</h3>
