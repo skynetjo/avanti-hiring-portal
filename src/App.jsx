@@ -3,7 +3,8 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, query, where, deleteDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Send, Filter, Users, UserCheck, UserX, Clock, Settings, LogOut, Eye, Upload, UserPlus, Trash2, Home, Shield, Plus, X, Briefcase, MapPin, Building } from 'lucide-react';
+import { Send, Filter, Users, UserCheck, UserX, Clock, Settings, LogOut, Eye, Upload, UserPlus, Trash2, Home, Shield, Plus, X, Briefcase, MapPin, Building, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -999,7 +1000,78 @@ if (formData.howHeard === 'Other' && !formData.howHeardOther) {
       alert('Failed to save templates');
     }
   };
+const exportToExcel = () => {
+  // Prepare data for export
+  const exportData = filteredCandidates.map(candidate => ({
+    'Name': candidate.name,
+    'Email': candidate.email,
+    'Phone': candidate.phone,
+    'Age': candidate.age,
+    'Gender': candidate.gender,
+    'Position Applied': candidate.profile,
+    'Experience (Years)': candidate.experience,
+    'Current Salary (INR)': candidate.currentSalary,
+    'Available to Join (Days)': candidate.availableToJoin,
+    'Home State': candidate.homeState,
+    'Home District': candidate.homeDistrict,
+    'Current State': candidate.currentState,
+    'Contacted': candidate.contacted || 'No',
+    'Screening': candidate.screening || 'No',
+    'Fits': candidate.fits || 'No',
+    'Status': candidate.status || 'Pending',
+    'How Heard': candidate.howHeard || '',
+    'Referrer Name': candidate.referrerName || '',
+    'Motivation': candidate.motivation || '',
+    'Pay Cut Response': candidate.payCut || '',
+    'Applied Date': candidate.submittedAt ? new Date(candidate.submittedAt).toLocaleDateString('en-IN') : '',
+    'Resume URL': candidate.resumeURL || ''
+  }));
 
+  // Create workbook and worksheet
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(exportData);
+
+  // Set column widths for better readability
+  const colWidths = [
+    { wch: 20 }, // Name
+    { wch: 25 }, // Email
+    { wch: 15 }, // Phone
+    { wch: 8 },  // Age
+    { wch: 12 }, // Gender
+    { wch: 25 }, // Position
+    { wch: 12 }, // Experience
+    { wch: 18 }, // Salary
+    { wch: 15 }, // Join Days
+    { wch: 20 }, // Home State
+    { wch: 20 }, // Home District
+    { wch: 20 }, // Current State
+    { wch: 12 }, // Contacted
+    { wch: 12 }, // Screening
+    { wch: 10 }, // Fits
+    { wch: 15 }, // Status
+    { wch: 20 }, // How Heard
+    { wch: 20 }, // Referrer
+    { wch: 40 }, // Motivation
+    { wch: 40 }, // Pay Cut
+    { wch: 15 }, // Applied Date
+    { wch: 50 }  // Resume URL
+  ];
+  ws['!cols'] = colWidths;
+
+  // Add worksheet to workbook
+  XLSX.utils.book_append_sheet(wb, ws, 'Candidates');
+
+  // Generate filename with current date and filters
+  const date = new Date().toLocaleDateString('en-IN').replace(/\//g, '-');
+  const filterInfo = selectedProfile !== 'All' ? `_${selectedProfile}` : '';
+  const statusInfo = selectedStatusFilter !== 'All' ? `_${selectedStatusFilter}` : '';
+  const filename = `Avanti_Candidates_${date}${filterInfo}${statusInfo}.xlsx`;
+
+  // Download the file
+  XLSX.writeFile(wb, filename);
+
+  alert(`✅ Exported ${exportData.length} candidate(s) successfully!`);
+};
   const handleAddTeamMember = async () => {
     if (userRole !== 'super_admin') {
       alert('Only Super Admins can add team members');
@@ -2852,22 +2924,33 @@ if (currentView === 'job-listings') {
     </div>
   </div>
 
-  <div className="mt-4 flex justify-end">
+  <div className="mt-4 flex justify-between items-center">
+    <div>
+      {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'program_manager') && (
+        <button
+          onClick={exportToExcel}
+          className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-colors font-medium shadow-md"
+        >
+          <Download className="w-5 h-5" />
+          Export to Excel ({filteredCandidates.length} candidates)
+        </button>
+      )}
+    </div>
     <button
-  onClick={() => {
-    setSelectedProfile('All');
-    setSelectedStatusFilter('All');
-    setSelectedStateFilter('All');
-    setSelectedDistrictFilter('All');
-    setSelectedExperienceFilter('All');
-    setSelectedJoiningDateFilter('All');
-    setSelectedGenderFilter('All');
-    setSelectedSalaryFilter('All');
-  }}
-  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
->
-  Clear All Filters
-</button>
+      onClick={() => {
+        setSelectedProfile('All');
+        setSelectedStatusFilter('All');
+        setSelectedStateFilter('All');
+        setSelectedDistrictFilter('All');
+        setSelectedExperienceFilter('All');
+        setSelectedJoiningDateFilter('All');
+        setSelectedGenderFilter('All');
+        setSelectedSalaryFilter('All');
+      }}
+      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
+    >
+      Clear All Filters
+    </button>
   </div>
 </div>
 
